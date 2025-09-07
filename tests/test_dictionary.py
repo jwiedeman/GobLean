@@ -28,3 +28,20 @@ def test_update_dictionary_tracks_seen_and_stability() -> None:
 
     assert dictionary["foo"]["seen"] == 3
     assert dictionary["foo"]["stability"] == 2 / 3
+
+
+def test_dictionary_roundtrip(tmp_path: Path) -> None:
+    dictionary = d.new_dictionary()
+    d.update_dictionary(dictionary, {"foo": "bar"})
+
+    path = tmp_path / "dict.json"
+    d.save_dictionary(dictionary, path)
+
+    loaded = d.load_dictionary(path)
+    assert loaded == {
+        "foo": {
+            "seen": 1,
+            "value_counts": {"bar": 1},
+            "stability": 1.0,
+        }
+    }
