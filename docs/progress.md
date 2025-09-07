@@ -178,3 +178,12 @@
     fp_rate_after: 0.00
     artifacts: ["out/unreachable_docs.csv"]
   next_hint: "Notify maintainers of unreachable citations; rollback: remove unreachable docs flagging"
+- ts: 2025-09-07T19:45:00Z
+  step: "Notifications generated for unreachable citations"
+  evidence:
+    coverage_before: 1.00
+    coverage_after: 1.00
+    fp_rate_before: 0.00
+    fp_rate_after: 0.00
+    artifacts: ["out/unreachable_notifications.csv"]
+  next_hint: "Escalate unresolved unreachable citations; rollback: remove notification function"

@@ -225,6 +225,12 @@ def test_flag_unreachable_doc_cache_entries(tmp_path: Path) -> None:
     write_baseline_csvs(canonical, out_dir)
     rows = list(csv.reader((out_dir / "unreachable_docs.csv").open("r", encoding="utf-8")))
     assert rows[1][0] == "cached://docs/playhead-monotonicity"
+    notes = list(
+        csv.reader(
+            (out_dir / "unreachable_notifications.csv").open("r", encoding="utf-8")
+        )
+    )
+    assert notes[1][0] == "cached://docs/playhead-monotonicity"
     if original is None:
         doc_cache_path.unlink()
     else:
