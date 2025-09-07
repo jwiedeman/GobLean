@@ -52,3 +52,12 @@
     fp_rate_after: 0.00
     artifacts: ["rules/tests/HB_PLAYHEAD_MONOTONIC_WEB__pass__simple.har"]
   next_hint: "Shadow eval the spec on baseline; rollback: remove golden test and spec"
+- ts: 2025-09-07T12:06:12Z
+  step: "Shadow eval for playhead monotonicity spec"
+  evidence:
+    coverage_before: 0.00
+    coverage_after: 1.00
+    fp_rate_before: 0.00
+    fp_rate_after: 0.00
+    artifacts: ["out/shadow_eval.json"]
+  next_hint: "Add semver scope based on fingerprint; rollback: remove shadow eval script and notes"
