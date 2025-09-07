@@ -187,3 +187,12 @@
     fp_rate_after: 0.00
     artifacts: ["out/unreachable_notifications.csv"]
   next_hint: "Escalate unresolved unreachable citations; rollback: remove notification function"
+- ts: 2025-09-07T19:49:18Z
+  step: "Unreachable citations escalated"
+  evidence:
+    coverage_before: 1.00
+    coverage_after: 1.00
+    fp_rate_before: 0.00
+    fp_rate_after: 0.00
+    artifacts: ["out/unreachable_escalations.csv"]
+  next_hint: "Summarize escalated citations in weekly report; rollback: remove escalation function"
