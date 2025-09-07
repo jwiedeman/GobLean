@@ -7,6 +7,7 @@ schema that downstream modules can operate on.
 from __future__ import annotations
 
 from typing import Any, Dict
+from urllib.parse import urlparse, parse_qsl
 
 
 def _list_to_dict(items: Any) -> Dict[str, Any]:
@@ -40,11 +41,25 @@ def canonical_envelope(raw_event: Dict[str, Any]) -> Dict[str, Any]:
     """
 
     request = raw_event.get("request", {}) if isinstance(raw_event, dict) else {}
+
+    url = request.get("url")
+    params: Dict[str, Any] = {}
+    if isinstance(url, str):
+        parsed = urlparse(url)
+        # Parameters encoded in the URL should be surfaced even if the
+        # request lacks an explicit ``queryString`` section.  ``parse_qsl``
+        # handles repeated keys and missing values gracefully.
+        params.update(dict(parse_qsl(parsed.query, keep_blank_values=True)))
+
+    # ``queryString`` entries, when present, take precedence over values parsed
+    # from the URL as they are generally more explicit in HAR logs.
+    params.update(_list_to_dict(request.get("queryString", [])))
+
     envelope: Dict[str, Any] = {
-        "url": request.get("url"),
+        "url": url,
         "method": request.get("method"),
         "headers": _list_to_dict(request.get("headers", [])),
-        "params": _list_to_dict(request.get("queryString", [])),
+        "params": params,
     }
 
     post = request.get("postData")
