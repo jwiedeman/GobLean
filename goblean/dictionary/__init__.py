@@ -13,6 +13,32 @@ def new_dictionary() -> Dict[str, Any]:
     return defaultdict(dict)
 
 
+def update_dictionary(
+    dictionary: Dict[str, Dict[str, Any]],
+    params: Dict[str, Any],
+) -> None:
+    """Update *dictionary* statistics with observed *params*.
+
+    Each parameter tracks how many times it has been seen along with a simple
+    stability metric: the frequency of the most common value divided by the
+    total observations.  This allows callers to identify parameters that appear
+    consistently across sessions.
+    """
+
+    for name, value in params.items():
+        meta = dictionary[name]
+
+        # Increment total observations.
+        meta["seen"] = meta.get("seen", 0) + 1
+
+        # Track how often each value has been seen.
+        value_counts: Dict[Any, int] = meta.setdefault("value_counts", {})
+        value_counts[value] = value_counts.get(value, 0) + 1
+
+        # Update stability as the dominant value frequency over total seen.
+        meta["stability"] = max(value_counts.values()) / meta["seen"]
+
+
 def unknown_stable_params(
     dictionary: Dict[str, Dict[str, Any]],
     known_set: Set[str],
