@@ -231,6 +231,22 @@ def escalate_unreachable_docs(out_dir: Path) -> None:
             writer.writerow([row[0], now])
 
 
+def summarize_escalations(out_dir: Path) -> None:
+    """Summarize escalated citations in a weekly report."""
+
+    escalate_path = out_dir / "unreachable_escalations.csv"
+    if not escalate_path.exists():
+        return
+    with escalate_path.open("r", encoding="utf-8") as f:
+        rows = list(csv.reader(f))
+    count = len(rows) - 1 if len(rows) > 1 else 0
+    weekly_path = out_dir / "weekly_report.csv"
+    with weekly_path.open("w", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f)
+        writer.writerow(["metric", "value"])
+        writer.writerow(["escalated_citations", str(count)])
+
+
 def metrics_from_canonical(path: Path) -> Dict[str, Any]:
     """Compute simple metrics from a canonical JSONL file.
 
@@ -371,6 +387,7 @@ def write_baseline_csvs(canonical: Path, out_dir: Path) -> None:
     populate_rules_index(out_dir)
     notify_unreachable_docs(out_dir)
     escalate_unreachable_docs(out_dir)
+    summarize_escalations(out_dir)
 
 
 def main() -> None:

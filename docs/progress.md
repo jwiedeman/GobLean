@@ -196,3 +196,12 @@
     fp_rate_after: 0.00
     artifacts: ["out/unreachable_escalations.csv"]
   next_hint: "Summarize escalated citations in weekly report; rollback: remove escalation function"
+- ts: 2025-09-07T19:54:51Z
+  step: "Weekly report summarizes escalated citations"
+  evidence:
+    coverage_before: 1.00
+    coverage_after: 1.00
+    fp_rate_before: 0.00
+    fp_rate_after: 0.00
+    artifacts: ["out/weekly_report.csv"]
+  next_hint: "Include additional metrics in weekly report; rollback: remove weekly report generation"
