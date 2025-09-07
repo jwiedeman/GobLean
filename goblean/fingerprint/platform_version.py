@@ -30,7 +30,14 @@ def fingerprint(event: Dict[str, Any]) -> Tuple[str, str, Tuple[int, ...]]:
     """
 
     headers = event.get("headers", {})
-    ua = headers.get("User-Agent", "").lower()
+
+    # HTTP headers are case-insensitive. Normalise the mapping to lowercase
+    # keys so callers may supply either "User-Agent" or "user-agent" and still
+    # have them recognised.  This makes the fingerprinting more forgiving of
+    # upstream normalisation differences.
+    headers_ci = {k.lower(): v for k, v in headers.items()}
+
+    ua = headers_ci.get("user-agent", "").lower()
 
     if "roku" in ua:
         platform = "roku"
@@ -41,9 +48,9 @@ def fingerprint(event: Dict[str, Any]) -> Tuple[str, str, Tuple[int, ...]]:
     else:
         platform = "unknown"
 
-    sdk = event.get("sdk") or headers.get("X-SDK-Name", "unknown")
+    sdk = event.get("sdk") or headers_ci.get("x-sdk-name", "unknown")
 
-    version_str = event.get("sdk_version") or headers.get("X-SDK-Version", "")
+    version_str = event.get("sdk_version") or headers_ci.get("x-sdk-version", "")
     version = _parse_version(version_str)
 
     return platform, sdk, version
