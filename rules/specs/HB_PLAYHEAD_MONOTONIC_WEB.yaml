@@ -1,0 +1,12 @@
+{
+  "rule_id": "HB_PLAYHEAD_MONOTONIC_WEB",
+  "description": "playhead must be non-decreasing when no seeks occur",
+  "scope": {
+    "platforms": ["web"],
+    "sdks": ["unknown"],
+    "version_range": ">=0.0.0"
+  },
+  "checks": [
+    {"non_decreasing_playhead": true}
+  ]
+}
