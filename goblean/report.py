@@ -250,11 +250,29 @@ def summarize_escalations(out_dir: Path) -> None:
         notified = len(rows) - 1 if len(rows) > 1 else 0
 
     weekly_path = out_dir / "weekly_report.csv"
+    prev_escalated = 0
+    prev_notified = 0
+    if weekly_path.exists():
+        with weekly_path.open("r", encoding="utf-8") as f:
+            rows = list(csv.reader(f))
+        for metric, value in rows[1:]:
+            if metric == "escalated_citations":
+                prev_escalated = int(value)
+            elif metric == "notified_citations":
+                prev_notified = int(value)
     with weekly_path.open("w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
         writer.writerow(["metric", "value"])
         writer.writerow(["escalated_citations", str(escalated)])
         writer.writerow(["notified_citations", str(notified)])
+        writer.writerow([
+            "escalated_citations_trend",
+            str(escalated - prev_escalated),
+        ])
+        writer.writerow([
+            "notified_citations_trend",
+            str(notified - prev_notified),
+        ])
 
 
 def metrics_from_canonical(path: Path) -> Dict[str, Any]:
