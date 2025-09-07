@@ -115,3 +115,12 @@
     fp_rate_after: 0.00
     artifacts: ["out/rules_index.csv"]
   next_hint: "Link provenance fields to doc cache updates; rollback: remove citation provenance columns"
+- ts: 2025-09-07T19:02:46Z
+  step: "Doc cache provenance linked to rules index"
+  evidence:
+    coverage_before: 1.00
+    coverage_after: 1.00
+    fp_rate_before: 0.00
+    fp_rate_after: 0.00
+    artifacts: ["docs/doc_cache.json","out/rules_index.csv"]
+  next_hint: "Backfill doc cache entries for existing citations; rollback: remove doc cache linkage"

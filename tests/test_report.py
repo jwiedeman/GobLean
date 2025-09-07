@@ -25,8 +25,28 @@ def test_write_baseline_csvs(tmp_path: Path) -> None:
     canonical = tmp_path / "canonical.jsonl"
     with canonical.open("w", encoding="utf-8") as f:
         f.write(json.dumps({"params": {"ts": 0, "playhead": 0}}) + "\n")
+    doc_cache_path = Path("docs/doc_cache.json")
+    doc_cache_path.parent.mkdir(exist_ok=True)
+    with doc_cache_path.open("w", encoding="utf-8") as f:
+        json.dump(
+            {
+                "cached://docs/playhead-monotonicity": {
+                    "source_url": "https://example.com/playhead-monotonicity",
+                    "first_seen": "2024-01-01T00:00:00Z",
+                    "last_verified": "2024-01-01T00:00:00Z",
+                }
+            },
+            f,
+        )
+    with doc_cache_path.open("r", encoding="utf-8") as f:
+        cache_before = json.load(f)
+    prev_last_verified = cache_before["cached://docs/playhead-monotonicity"]["last_verified"]
     out_dir = tmp_path / "out"
     write_baseline_csvs(canonical, out_dir)
+    with doc_cache_path.open("r", encoding="utf-8") as f:
+        cache_after = json.load(f)
+    new_last_verified = cache_after["cached://docs/playhead-monotonicity"]["last_verified"]
+    assert new_last_verified != prev_last_verified
     metrics_path = out_dir / "metrics_daily.csv"
     rows = list(csv.reader(metrics_path.open("r", encoding="utf-8")))
     assert rows[0] == ["date","platform","sdk","version_scope","batch","coverage","fp_rate","tp_rate","fn_rate","violations","total_sessions","notes"]
@@ -63,6 +83,7 @@ def test_write_baseline_csvs(tmp_path: Path) -> None:
     assert rules_rows[1][6] == "1"
     assert rules_rows[1][7] == "0"
     assert rules_rows[1][9] == "Playhead must not decrease."
-    assert rules_rows[1][10] == ""
-    assert rules_rows[1][11] == ""
-    assert rules_rows[1][12] == ""
+    assert rules_rows[1][10] == "https://example.com/playhead-monotonicity"
+    assert rules_rows[1][11] == "2024-01-01T00:00:00Z"
+    assert rules_rows[1][12] == new_last_verified
+    doc_cache_path.unlink()
