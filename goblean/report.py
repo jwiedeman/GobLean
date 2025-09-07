@@ -193,6 +193,25 @@ def schedule_doc_cache_verification(
     return stop_event
 
 
+def notify_unreachable_docs(out_dir: Path) -> None:
+    """Write notifications for unreachable citation sources."""
+
+    src = out_dir / "unreachable_docs.csv"
+    if not src.exists():
+        return
+    with src.open("r", encoding="utf-8") as f:
+        rows = list(csv.reader(f))
+    if len(rows) <= 1:
+        return
+    notify_path = out_dir / "unreachable_notifications.csv"
+    now = datetime.now(timezone.utc).isoformat()
+    with notify_path.open("w", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f)
+        writer.writerow(["citation_url", "notified_at"])
+        for row in rows[1:]:
+            writer.writerow([row[0], now])
+
+
 def metrics_from_canonical(path: Path) -> Dict[str, Any]:
     """Compute simple metrics from a canonical JSONL file.
 
@@ -331,6 +350,7 @@ def write_baseline_csvs(canonical: Path, out_dir: Path) -> None:
             csv.writer(f).writerow(head)
 
     populate_rules_index(out_dir)
+    notify_unreachable_docs(out_dir)
 
 
 def main() -> None:
