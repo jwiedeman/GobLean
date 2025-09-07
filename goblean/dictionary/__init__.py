@@ -1,6 +1,8 @@
 """Dictionary of telemetry parameters."""
 
 from collections import defaultdict
+import json
+from pathlib import Path
 from typing import Dict, Any, Set, List
 
 
@@ -70,3 +72,18 @@ def unknown_stable_params(
             continue
         results.append(param)
     return results
+
+
+def save_dictionary(dictionary: Dict[str, Any], path: Path) -> None:
+    """Serialize *dictionary* to *path* as JSON."""
+
+    with path.open("w", encoding="utf-8") as f:
+        json.dump(dictionary, f)
+
+
+def load_dictionary(path: Path) -> Dict[str, Any]:
+    """Load a dictionary previously saved with :func:`save_dictionary`."""
+
+    with path.open("r", encoding="utf-8") as f:
+        data = json.load(f)
+    return defaultdict(dict, data)
