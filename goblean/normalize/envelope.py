@@ -6,6 +6,7 @@ schema that downstream modules can operate on.
 
 from __future__ import annotations
 
+import json
 from typing import Any, Dict
 from urllib.parse import urlparse, parse_qsl
 
@@ -73,6 +74,15 @@ def canonical_envelope(raw_event: Dict[str, Any]) -> Dict[str, Any]:
             # access structured parameters submitted via POST requests.  Blank
             # values are preserved to mirror the behaviour of browsers.
             envelope["form"] = dict(parse_qsl(text or "", keep_blank_values=True))
+        elif mime.startswith("application/json"):
+            try:
+                envelope["json"] = json.loads(text or "null")
+            except json.JSONDecodeError:
+                # If the body is not valid JSON, the raw text is still
+                # preserved in ``body`` and callers can decide how to handle
+                # it.  Swallowing the error keeps the normaliser forgiving of
+                # slightly malformed telemetry.
+                pass
 
     return envelope
 
