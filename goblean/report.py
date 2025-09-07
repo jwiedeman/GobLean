@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import threading
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict
@@ -157,6 +158,25 @@ def verify_doc_cache(doc_cache_path: Path | None = None) -> Dict[str, bool]:
     with doc_cache_path.open("w", encoding="utf-8") as f:
         json.dump(cache, f, indent=2)
     return results
+
+
+def schedule_doc_cache_verification(
+    interval_seconds: int, doc_cache_path: Path | None = None
+) -> threading.Event:
+    """Run ``verify_doc_cache`` periodically in a background thread.
+
+    Returns a :class:`threading.Event` that can be set to stop the schedule.
+    """
+
+    stop_event = threading.Event()
+
+    def loop() -> None:
+        while not stop_event.is_set():
+            verify_doc_cache(doc_cache_path)
+            stop_event.wait(interval_seconds)
+
+    threading.Thread(target=loop, daemon=True).start()
+    return stop_event
 
 
 def metrics_from_canonical(path: Path) -> Dict[str, Any]:

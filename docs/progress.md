@@ -142,3 +142,12 @@
     fp_rate_after: 0.00
     artifacts: ["docs/doc_cache.json"]
   next_hint: "Schedule regular verification runs; rollback: remove verification function"
+- ts: 2025-09-07T19:21:14Z
+  step: "Scheduled periodic doc cache verification"
+  evidence:
+    coverage_before: 1.00
+    coverage_after: 1.00
+    fp_rate_before: 0.00
+    fp_rate_after: 0.00
+    artifacts: []
+  next_hint: "Handle unreachable citation sources gracefully; rollback: remove doc cache scheduler"

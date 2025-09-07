@@ -1,8 +1,14 @@
 import csv
 import json
+import time
 from pathlib import Path
 
-from goblean.report import metrics_from_canonical, write_baseline_csvs
+import goblean.report as report
+from goblean.report import (
+    metrics_from_canonical,
+    schedule_doc_cache_verification,
+    write_baseline_csvs,
+)
 
 
 def test_metrics_from_canonical(tmp_path: Path) -> None:
@@ -91,6 +97,20 @@ def test_write_baseline_csvs(tmp_path: Path) -> None:
         doc_cache_path.unlink()
     else:
         doc_cache_path.write_text(original, encoding="utf-8")
+
+
+def test_schedule_doc_cache_verification(monkeypatch) -> None:
+    calls: list[float] = []
+
+    def fake_verify(path=None):
+        calls.append(time.time())
+        return {}
+
+    monkeypatch.setattr(report, "verify_doc_cache", fake_verify)
+    stop_event = schedule_doc_cache_verification(0.01)
+    time.sleep(0.03)
+    stop_event.set()
+    assert len(calls) >= 2
 
 
 def test_write_baseline_csvs_backfills_doc_cache(tmp_path: Path) -> None:
