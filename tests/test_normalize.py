@@ -31,6 +31,15 @@ def test_canonical_envelope_extracts_fields() -> None:
     assert env["body"] == "body"
 
 
+def test_canonical_envelope_parses_url_params() -> None:
+    """Query parameters embedded in the URL should be extracted."""
+
+    raw = {"request": {"url": "https://example.com/api?a=1&b=2"}}
+
+    env = canonical_envelope(raw)
+    assert env["params"] == {"a": "1", "b": "2"}
+
+
 def test_canonical_envelope_handles_missing() -> None:
     """Missing sections should result in empty mappings, not errors."""
 
