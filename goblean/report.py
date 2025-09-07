@@ -16,6 +16,11 @@ def populate_rules_index(out_dir: Path) -> None:
 
     specs_dir = Path("rules/specs")
     tests_dir = Path("rules/tests")
+    doc_cache_path = Path("docs/doc_cache.json")
+    doc_cache: Dict[str, Dict[str, str]] = {}
+    if doc_cache_path.exists():
+        with doc_cache_path.open("r", encoding="utf-8") as f:
+            doc_cache = json.load(f)
     header = [
         "rule_id",
         "scope_platforms",
@@ -61,24 +66,25 @@ def populate_rules_index(out_dir: Path) -> None:
             if c.get("quote")
         ]
         citation_quotes_str = "|".join(citation_quotes)
-        citation_source_urls = [
-            c.get("source_url", "")
-            for c in spec.get("citations", [])
-            if c.get("source_url")
-        ]
-        citation_source_urls_str = "|".join(citation_source_urls)
-        citation_first_seen = [
-            c.get("first_seen", "")
-            for c in spec.get("citations", [])
-            if c.get("first_seen")
-        ]
-        citation_first_seen_str = "|".join(citation_first_seen)
-        citation_last_verified = [
-            c.get("last_verified", "")
-            for c in spec.get("citations", [])
-            if c.get("last_verified")
-        ]
-        citation_last_verified_str = "|".join(citation_last_verified)
+        citation_source_urls: list[str] = []
+        citation_first_seen: list[str] = []
+        citation_last_verified: list[str] = []
+        for c in spec.get("citations", []):
+            url = c.get("url", "")
+            if url and url in doc_cache:
+                entry = doc_cache[url]
+                entry["last_verified"] = datetime.now(timezone.utc).isoformat()
+                doc_cache[url] = entry
+                citation_source_urls.append(entry.get("source_url", ""))
+                citation_first_seen.append(entry.get("first_seen", ""))
+                citation_last_verified.append(entry.get("last_verified", ""))
+            else:
+                citation_source_urls.append(c.get("source_url", ""))
+                citation_first_seen.append(c.get("first_seen", ""))
+                citation_last_verified.append(c.get("last_verified", ""))
+        citation_source_urls_str = "|".join([s for s in citation_source_urls if s])
+        citation_first_seen_str = "|".join([s for s in citation_first_seen if s])
+        citation_last_verified_str = "|".join([s for s in citation_last_verified if s])
         updated_at = datetime.now(timezone.utc).isoformat()
         rows.append(
             [
@@ -98,6 +104,9 @@ def populate_rules_index(out_dir: Path) -> None:
                 updated_at,
             ]
         )
+    if doc_cache_path.exists():
+        with doc_cache_path.open("w", encoding="utf-8") as f:
+            json.dump(doc_cache, f, indent=2)
     with (out_dir / "rules_index.csv").open("w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
         writer.writerow(header)
