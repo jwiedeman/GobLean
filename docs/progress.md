@@ -214,3 +214,12 @@
     fp_rate_after: 0.00
     artifacts: ["out/weekly_report.csv"]
   next_hint: "Add trend metrics to weekly report; rollback: remove notified citations metric"
+- ts: 2025-09-07T20:53:02Z
+  step: "Trend metrics added to weekly report"
+  evidence:
+    coverage_before: 1.00
+    coverage_after: 1.00
+    fp_rate_before: 0.00
+    fp_rate_after: 0.00
+    artifacts: ["out/weekly_report.csv"]
+  next_hint: "Include additional metrics in weekly report; rollback: remove trend metrics"
