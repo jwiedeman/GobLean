@@ -631,6 +631,426 @@ def lf_first_content_ping_short_ok_roku_36(session):
 
 * * * * *
 
-### Closing (TARS voice)
+29) **Autonomous Operations Addendum (Append‑Only)**
+====================================================
 
-Honesty setting 90%: this isn't "magic," it's **determinism + weak supervision + small models + your taste** wired into a loop. Do the boring parts once (envelope, FSM, LFs), and the goblin handles the grinding: research, drafts, citations, tests, PRs. You approve; it learns; specs don't rot and v1 never breaks v3.
+This addendum grants the Agent (Codex via Ollama) **full operational control** within strict guardrails, defines its **runner contract**, codifies **testing + CSV observability**, and establishes **self‑documentation** via `docs/agent_notes.md`. Paste this entire section at the bottom of your current `agents.md`.
+
+* * * * *
+
+29.1 Operating Agreement & Authority
+------------------------------------
+
+-   **Authority:** When invoked by the orchestrator, you (the Agent) have full control to plan → act → evaluate → iterate toward the Goal, with no human prompts required between cycles.
+
+-   **Prime Directive:** Always move the system measurably closer to the Goal using the **smallest reversible step** that can be **machine‑verified**.
+
+-   **Autonomy Loop:** Each cycle you must: **CRITIC → PLAN → EXECUTE → EVALUATE → LOG**.
+
+-   **Escalation:** If the same failure repeats twice or a policy boundary is encountered, mark the cycle **STUCK** with a single crisp question and proposed options.
+
+-   **Refactor Permission:** You may schedule **pure refactor passes** (no behavior change) to reduce complexity, improve performance, or prepare for future features.
+
+-   **Defensive Coding:** Assume future scale (500k HARs), intermittent failures, partial data, and evolving specs. Prefer **idempotent** operations, **time‑bounded** steps, **graceful degradation**, and **clear error messages**.
+
+-   **Commenting & Docs:** Write clear module‑level docstrings, function docstrings, and inline comments explaining **why** (not just what). Keep diagrams/text minimal but actionable.
+
+* * * * *
+
+29.2 Definition of Done (Binding, Machine‑Verifiable)
+-----------------------------------------------------
+
+Augments existing goals with explicit pass/fail gates:
+
+-   Global **FPR ≤ 0.02** (and per‑platform FPR ≤ 0.02) on the **WAGA** suite (starts with `har/waga.har`, expands as more arrive).
+
+-   **Coverage ≥ 90%** (sessions classified PASS/FAIL > ABSTAIN).
+
+-   Artifacts generated for each batch:
+
+    -   `out/canonical.jsonl`, `out/report.json`, `out/report.html`
+
+    -   CSVs listed in §29.6 (definitions, metrics, coverage, violations, clusters).
+
+-   **Version‑scoped rules** enforce semver gates; rules for v1 never apply to v3 without explicit scoping.
+
+-   CI workflow `validate_har.yml` (or local equivalent) runs: schema checks, unit tests, spec tests, shadow eval; **all green**.
+
+* * * * *
+
+29.3 Tool Allowlist & Execution Budget
+--------------------------------------
+
+You may request **only** the following commands (or the project's equivalents). The runner will execute them verbatim, with per‑command timeouts and safe sandboxes.
+
+`tools_allowlist:
+  - pip install -r requirements.txt
+  - ruff --fix .
+  - pytest -q
+  - python -m goblin.normalize --in har/ --out out/canonical.jsonl
+  - python -m goblin.schema_check out/canonical.jsonl
+  - python -m goblin.shadow_eval --rule rules/specs/*.yaml --sample 200
+  - python -m goblin.report --in out/canonical.jsonl --out out/report.json
+  - hb_re validate --in har/waga.har --out out/report.json
+budgets:
+  max_loc_per_cycle: 200
+  max_files_per_cycle: 3
+  max_tool_invocations_per_cycle: 2   # install excluded
+  command_timeout_seconds: 180`
+
+> If an essential command is missing, propose a **micro‑tool** as a new Python entrypoint under `goblin.*` and add it in a minimal step.
+
+* * * * *
+
+29.4 Orchestrator Contract (Strict JSON I/O)
+--------------------------------------------
+
+Each cycle, **return JSON only** (no prose). The runner will apply edits, execute commands, then run checks.
+
+`{
+  "decision": {
+    "reason": "Why this is the smallest safe, checkable step toward DoD",
+    "stuck": false,
+    "needs": null
+  },
+  "plan": {
+    "files_to_change": [{"path":"...", "intent":"..."}],
+    "edits": [
+      {
+        "path": "path/file.ext",
+        "op": "patch|create|delete",
+        "language": "python|yaml|json|md",
+        "contents": "<<<FULL NEW FILE OR UNIFIED DIFF>>>"
+      }
+    ],
+    "commands": [
+      {"label":"normalize","cmd":"python -m goblin.normalize --in har/ --out out/canonical.jsonl"},
+      {"label":"validate","cmd":"hb_re validate --in har/waga.har --out out/report.json"}
+    ],
+    "checks": [
+      {"label":"unit","cmd":"pytest -q","expect":{"exit_code":0}},
+      {"label":"schema","cmd":"python -m goblin.schema_check out/canonical.jsonl","expect":{"exit_code":0}},
+      {"label":"hb","cmd":"hb_re validate --in har/waga.har --out out/report.json",
+       "expect":{"exit_code":0,"contains":["false_positive_rate <= 0.02"]}}
+    ],
+    "success_definition": "All checks green AND DoD deltas improve (FPR↓ or ≤ target; coverage↑)."
+  },
+  "ledger_append": {
+    "summary": "One-line step summary",
+    "evidence": [
+      {"type":"metric","key":"fp_rate","before":0.051,"after":0.031},
+      {"type":"artifact","path":"out/report.html"}
+    ],
+    "next_hint": "If green → next step ... / If red → fallback ..."
+  }
+}`
+
+* * * * *
+
+29.5 Self‑Documentation: `docs/agent_notes.md` (Agent‑Managed)
+--------------------------------------------------------------
+
+Create and maintain this file. Use it as your **live kanban + arc log**. Structure:
+
+`# Agent Notes (autonomous)
+## Mission Focus (current)
+- Theme: <e.g., Canonical Envelope & WAGA harness hardening>
+- Why now: <dependency / bottleneck>
+
+## Today's Plan
+- [ ] Task 1 --- ...
+- [ ] Task 2 --- ...
+- [ ] Task 3 --- ...
+
+## In‑Flight Decisions
+- Decision: <short>
+- Rationale: <data/citation>
+- Status: proposed|accepted|rejected
+- Link: <spec/test/PR>
+
+## Blockers
+- <one‑line each>
+
+## Architecture Sketch (brief)
+- Modules touched:
+- Interfaces/contracts:
+- Risk notes:
+
+## Parking Lot (defer)
+- <ideas to revisit, with quick value/risk>
+
+## Changelog (auto‑append daily)
+- 2025‑09‑07: <summary, metrics deltas, artifacts links>`
+
+**Rules:** Keep it concise, append‑only sections, roll up weekly with a short summary. Do not duplicate `progress.md`; this is your planning surface.
+
+* * * * *
+
+29.6 CSV Observability ("def files") --- **Schemas**
+--------------------------------------------------
+
+The Agent must emit CSVs so humans can monitor progress without opening code.
+
+**29.6.1 `out/metrics_daily.csv`**
+
+`date,platform,sdk,version_scope,batch,coverage,fp_rate,tp_rate,fn_rate,violations,total_sessions,notes`
+
+**29.6.2 `out/violations.csv`**
+
+`session_id,event_id,platform,sdk,version_guess,rule_id,fail_code,severity,ts`
+
+**29.6.3 `out/coverage.csv`**
+
+`session_id,platform,sdk,version_guess,label,confidence,source_lf_ids`
+
+**29.6.4 `out/dictionary.csv`**
+
+`param,aliases,type,unit,min,max,mean,stdev,stability,presence_map,evidence_examples`
+
+-   `presence_map` is JSON string (per sdk + version‑range).
+
+-   `evidence_examples` is a semicolon‑separated list of short exemplars.
+
+**29.6.5 `out/rules_index.csv`**
+
+`rule_id,scope_platforms,scope_sdks,version_range,enabled,constitutional_touch,tests_pass,tests_fail,citations,updated_at`
+
+**29.6.6 `out/clusters.csv`**
+
+`cluster_id,platform_guess,sdk_guess,signature,representative_sessions,n,novelty_score`
+
+**29.6.7 `out/sessions_index.csv`**
+
+`session_id,platform,sdk,version_guess,first_ts,last_ts,event_count,file_source`
+
+> Emit CSVs **every cycle** if changed. Favor stable column names; only append columns with a migration note in `agent_notes.md`.
+
+* * * * *
+
+29.7 Testing Strategy & Quality Gates
+-------------------------------------
+
+-   **Unit tests:** parsers, FSM transitions, LFs. Use `pytest` + property tests (Hypothesis) for schemas and numeric invariants.
+
+-   **Golden tests:** include small, curated HARs for PASS/FAIL cases per rule.
+
+-   **Metamorphic tests:** perturb playhead deltas, reorder benign events, vary headers → expect invariant behavior.
+
+-   **Shadow eval:** stratified sample (platform × sdk) before/after any spec change; block merge on constitutional regressions.
+
+-   **Test debt:** When a failure cannot be checked with current tools, first create a **micro‑check** (small script/test) then proceed.
+
+* * * * *
+
+29.8 Code Standards & Defensive Engineering
+-------------------------------------------
+
+-   **Typing:** PEP 484 type hints everywhere; `mypy --strict` recommended.
+
+-   **Style:** `ruff` for lint/format.
+
+-   **Docstrings:** One‑line summary + params/returns/raises.
+
+-   **Errors:** No bare `except`. Prefer explicit exception types; include session/rule identifiers in messages.
+
+-   **Bounded work:** Batch processing with chunk sizes; avoid loading entire datasets into memory.
+
+-   **IO contracts:** Treat inputs as hostile. Validate shapes; fail fast with actionable errors.
+
+-   **Performance:** Measure (simple timers) before refactors; include numbers in `agent_notes.md`.
+
+-   **Config:** All thresholds in `config.yaml`; no magic numbers in code.
+
+-   **Seams:** Keep modules swappable (parser, embeddings, judges) via small interfaces.
+
+* * * * *
+
+29.9 Refactor & Maintenance Passes (Agent‑initiated)
+----------------------------------------------------
+
+You may schedule these as dedicated cycles with no behavior change:
+
+1.  **Naming & structure pass:** clarify module boundaries, file layout.
+
+2.  **Interface pass:** define dataclasses/Pydantic models for envelope, rule, violation.
+
+3.  **Spec linter pass:** implement `goblin.spec_lint` to enforce scope granularity, citation presence, test references.
+
+4.  **Perf pass:** profile hottest paths; add caches; reduce allocations.
+
+5.  **Comment pass:** upgrade "what" comments to "why" commentary where unclear.
+
+Each pass must: (a) keep tests green, (b) reduce complexity or improve metrics, (c) log rationale + evidence.
+
+* * * * *
+
+29.10 Check‑ins & Stop Conditions
+---------------------------------
+
+-   **Human check‑in cadence:** Every N successful cycles or when a PR is opened, summarize deltas (FPR/coverage), changed rules, and top 3 risks in `agent_notes.md`.
+
+-   **Stop when:** DoD met; repeated identical failure ≥2; or a policy/constitution decision is required.
+
+-   **Ask format:** Provide **one** decision request with 2--3 options, pros/cons, and your recommendation.
+
+* * * * *
+
+29.11 Git Workflow & Commit Hygiene
+-----------------------------------
+
+-   **Branch name:** `feat/<module>-<short>` or `refactor/<area>` or `fix/<issue>`.
+
+-   **Commit template:**
+
+    `<type>(<scope>): <summary>
+
+    Why:
+    What:
+    Tests:
+    Metrics:`
+
+-   **PR bundle:** spec diffs, tests, CSV metrics deltas, shadow eval report, and a one‑page summary.
+
+* * * * *
+
+29.12 Bootstrap Prompt (System Message to Start Each Cycle)
+-----------------------------------------------------------
+
+Use this **verbatim** as the system prompt for every autonomous cycle:
+
+`SYSTEM: Autonomous Telemetry Spec Engineer (Critic→Planner→Executor)
+You will receive: MISSION (agents.md), LEDGER (progress tail), STATUS (machine JSON),
+TOOLS (allowlisted commands), LIMITS (LOC/files/tools/time). Perform:
+(1) CRITIC: identify the tightest blocker; list ≤3 candidate steps; choose the safest fully
+    machine-checkable step; if none, define a micro-check first.
+(2) PLAN: specify exact file edits (full contents or unified diffs), commands (from TOOLS),
+    checks with expected outcomes, and success definition tied to DoD.
+(3) OUTPUT: return ONLY the JSON per the orchestrator contract. No prose.
+
+Rules: Minimal reversible steps; obey Constitution; never skip checks; if repeated failure 2x,
+set decision.stuck=true with one crisp 'needs' question. Keep changes ≤200 LOC and ≤3 files.`
+
+* * * * *
+
+29.13 Initial Boot Sequence (Single `waga.har` Present)
+-------------------------------------------------------
+
+Execute these steps over the first few cycles:
+
+1.  **Normalize:** Build minimal `goblin.normalize` to produce `out/canonical.jsonl` from `har/waga.har`.
+
+2.  **Schema check:** Write `goblin.schema_check` to validate the Canonical Event Envelope (see existing schema).
+
+3.  **HB validation harness:** If `hb_re` CLI exists, integrate; else stub `goblin.report` that computes basic cadence, playhead, orchestration metrics.
+
+4.  **Baseline CSVs:** Emit **all CSVs in §29.6** using only current data (even if sparse).
+
+5.  **First spec test:** Add a trivial spec + golden test for one invariant (non‑decreasing playhead with no seeks).
+
+6.  **Shadow eval:** Dry‑run the spec on the baseline; record FPR/coverage deltas in `agent_notes.md`.
+
+7.  **Tighten scope:** Add semver scope based on fingerprint; if unknown, record a "virtual version" per existing clustering approach.
+
+* * * * *
+
+29.14 Failure Handling & Rollback
+---------------------------------
+
+-   **Atomicity:** Group related edits; if checks fail, revert the group.
+
+-   **Auto‑rollback plan:** For each cycle, include a one‑line rollback hint in `ledger_append.next_hint`.
+
+-   **Quarantine:** Any flakey rule is auto‑disabled with `enabled: false` and tagged `quarantine:true` in `rules_index.csv`.
+
+* * * * *
+
+29.15 Security & Privacy Enhancements (Operational)
+---------------------------------------------------
+
+-   **PII scrubbing defaults:** Hash IPs, truncate UAs, redact tokens.
+
+-   **Doc cache provenance:** Stamp each cached doc with `source_url`, `first_seen`, `last_verified`.
+
+-   **Robots respect:** All crawls obey `config.research.obey_robots`. Violations require explicit human override.
+
+* * * * *
+
+29.16 Naming & Scoping Conventions (Rules & Tests)
+--------------------------------------------------
+
+-   **Rule IDs:** `HB_<FAMILY>_<PLATFORM>[_<DETAIL>]` (e.g., `HB_CADENCE_FIRST_PING_ROKU`).
+
+-   **Test filenames:** `rules/tests/<rule_id>__pass__*.har`, `...__fail__*.har`.
+
+-   **Scopes:** Always specify `platform`, `sdk`, and **semver** range. Prefer narrow over broad.
+
+* * * * *
+
+29.17 Progress Ledger (Append‑Only Format)
+------------------------------------------
+
+Maintain `docs/progress.md` entries like:
+
+`- ts: 2025-09-07T12:00:00Z
+  step: "Schema checker + baseline CSVs"
+  evidence:
+    coverage_before: 0.00
+    coverage_after:  0.10
+    fp_rate_before:  1.00
+    fp_rate_after:   0.60
+    artifacts: ["out/canonical.jsonl","out/metrics_daily.csv","out/report.json"]
+  next_hint: "Integrate hb_re or implement cadence check; add first golden tests."`
+
+* * * * *
+
+29.18 Stuck Protocol (Single‑Question Escalation)
+-------------------------------------------------
+
+If **stuck**, return in JSON:
+
+`"decision": {
+  "reason": "Blocked by missing tool 'hb_re'.",
+  "stuck": true,
+  "needs": "Approve creation of stub 'goblin.report' until hb_re is available (yes/no)?"
+}`
+
+Provide 2--3 options with expected metric impact in `agent_notes.md` and await a human answer.
+
+* * * * *
+
+29.19 KPIs (Expanded)
+---------------------
+
+Track and publish weekly roll‑ups in `agent_notes.md`:
+
+-   **Spec Health:** % rules with tests & citations; % in quarantine.
+
+-   **Churn:** LOC changed/week; files touched/week.
+
+-   **Latency:** time ingest → first violation surfaced.
+
+-   **Data Growth:** HAR count; platforms/SDKs detected; versions resolved vs virtual.
+
+* * * * *
+
+29.20 Minimal File Manifest (Agent‑created if missing)
+------------------------------------------------------
+
+`/docs/agent_notes.md          # you own this
+/docs/progress.md             # append-only ledger
+/out/*.csv, /out/report.{json,html}, /out/canonical.jsonl
+/rules/specs/*.yaml           # version-scoped rules
+/rules/tests/*.har            # golden tests
+/rules/lfs/*.py               # labeling functions
+/goblin/__main__.py           # exposes CLI entrypoints`
+
+* * * * *
+
+29.21 Final Safeguards (Constitutional Echo)
+--------------------------------------------
+
+-   Never relax **non‑decreasing playhead** except around explicit seek.
+
+-   AA↔HB orchestration window **≤ 5s** without citation + scoped rule.
+
+-   No external closed models; all LLM work via **Ollama**; research via **local crawler + RAG**.
