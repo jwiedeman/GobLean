@@ -133,3 +133,12 @@
     fp_rate_after: 0.00
     artifacts: ["docs/doc_cache.json","out/rules_index.csv"]
   next_hint: "Periodic verification of doc cache entries; rollback: remove doc cache backfill logic and tests"
+- ts: 2025-09-07T19:15:53Z
+  step: "Doc cache verification updates last_verified"
+  evidence:
+    coverage_before: 1.00
+    coverage_after: 1.00
+    fp_rate_before: 0.00
+    fp_rate_after: 0.00
+    artifacts: ["docs/doc_cache.json"]
+  next_hint: "Schedule regular verification runs; rollback: remove verification function"
