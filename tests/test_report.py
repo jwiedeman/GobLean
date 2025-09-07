@@ -45,3 +45,5 @@ def test_write_baseline_csvs(tmp_path: Path) -> None:
     assert rules_rows[0] == ["rule_id","scope_platforms","scope_sdks","version_range","enabled","constitutional_touch","tests_pass","tests_fail","citations","updated_at"]
     assert rules_rows[1][0] == "HB_PLAYHEAD_MONOTONIC_WEB"
     assert rules_rows[1][3] == "0.0.0-virtual"
+    assert rules_rows[1][6] == "1"
+    assert rules_rows[1][7] == "0"
