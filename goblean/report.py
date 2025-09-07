@@ -27,6 +27,9 @@ def populate_rules_index(out_dir: Path) -> None:
         "tests_fail",
         "citations",
         "citation_quotes",
+        "citation_source_urls",
+        "citation_first_seen",
+        "citation_last_verified",
         "updated_at",
     ]
     rows = []
@@ -58,6 +61,24 @@ def populate_rules_index(out_dir: Path) -> None:
             if c.get("quote")
         ]
         citation_quotes_str = "|".join(citation_quotes)
+        citation_source_urls = [
+            c.get("source_url", "")
+            for c in spec.get("citations", [])
+            if c.get("source_url")
+        ]
+        citation_source_urls_str = "|".join(citation_source_urls)
+        citation_first_seen = [
+            c.get("first_seen", "")
+            for c in spec.get("citations", [])
+            if c.get("first_seen")
+        ]
+        citation_first_seen_str = "|".join(citation_first_seen)
+        citation_last_verified = [
+            c.get("last_verified", "")
+            for c in spec.get("citations", [])
+            if c.get("last_verified")
+        ]
+        citation_last_verified_str = "|".join(citation_last_verified)
         updated_at = datetime.now(timezone.utc).isoformat()
         rows.append(
             [
@@ -71,6 +92,9 @@ def populate_rules_index(out_dir: Path) -> None:
                 str(tests_fail),
                 citations,
                 citation_quotes_str,
+                citation_source_urls_str,
+                citation_first_seen_str,
+                citation_last_verified_str,
                 updated_at,
             ]
         )
