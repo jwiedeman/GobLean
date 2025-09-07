@@ -67,6 +67,12 @@ def canonical_envelope(raw_event: Dict[str, Any]) -> Dict[str, Any]:
         text = post.get("text")
         if text is not None:
             envelope["body"] = text
+        mime = post.get("mimeType", "")
+        if mime.startswith("application/x-www-form-urlencoded"):
+            # Parse form-encoded body into a separate mapping so callers can
+            # access structured parameters submitted via POST requests.  Blank
+            # values are preserved to mirror the behaviour of browsers.
+            envelope["form"] = dict(parse_qsl(text or "", keep_blank_values=True))
 
     return envelope
 

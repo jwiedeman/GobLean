@@ -46,3 +46,20 @@ def test_canonical_envelope_handles_missing() -> None:
     env = canonical_envelope({})
     assert env == {"url": None, "method": None, "headers": {}, "params": {}}
 
+
+def test_canonical_envelope_parses_form_body() -> None:
+    """Form-encoded POST bodies should be exposed as structured parameters."""
+
+    raw = {
+        "request": {
+            "url": "https://example.com/api",
+            "postData": {
+                "mimeType": "application/x-www-form-urlencoded",
+                "text": "a=1&b=2",
+            },
+        }
+    }
+
+    env = canonical_envelope(raw)
+    assert env["form"] == {"a": "1", "b": "2"}
+
