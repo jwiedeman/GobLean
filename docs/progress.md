@@ -61,3 +61,12 @@
     fp_rate_after: 0.00
     artifacts: ["out/shadow_eval.json"]
   next_hint: "Add semver scope based on fingerprint; rollback: remove shadow eval script and notes"
+- ts: 2025-09-07T12:10:44Z
+  step: "Semver scope added via fingerprint"
+  evidence:
+    coverage_before: 1.00
+    coverage_after: 1.00
+    fp_rate_before: 0.00
+    fp_rate_after: 0.00
+    artifacts: ["rules/specs/HB_PLAYHEAD_MONOTONIC_WEB.yaml","out/metrics_daily.csv"]
+  next_hint: "Populate rules index with version scope; rollback: revert semver scope and baseline update"

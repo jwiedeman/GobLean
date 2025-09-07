@@ -8,6 +8,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict
 
+from goblean.fingerprint import fingerprint
+
 
 def metrics_from_canonical(path: Path) -> Dict[str, Any]:
     """Compute simple metrics from a canonical JSONL file.
@@ -71,7 +73,20 @@ def write_baseline_csvs(canonical: Path, out_dir: Path) -> None:
     date_str = ""
     if metrics.get("first_ts") is not None:
         date_str = datetime.fromtimestamp(float(metrics["first_ts"]), tz=timezone.utc).date().isoformat()
-    row = [date_str,"unknown","unknown","unknown","0",0.0,0.0,0.0,0.0,0,1,""]
+
+    platform = "unknown"
+    sdk = "unknown"
+    version = "0.0.0-virtual"
+    with canonical.open("r", encoding="utf-8") as f:
+        for line in f:
+            if not line.strip():
+                continue
+            env = json.loads(line)
+            platform, sdk, ver = fingerprint(env)
+            version = ".".join(map(str, ver)) if ver else "0.0.0-virtual"
+            break
+
+    row = [date_str,platform,sdk,version,"0",0.0,0.0,0.0,0.0,0,1,""]
     with (out_dir / "metrics_daily.csv").open("w", newline="", encoding="utf-8") as f:
         csv.writer(f).writerows([header,row])
 
