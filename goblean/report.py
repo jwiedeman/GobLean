@@ -24,6 +24,7 @@ def populate_rules_index(out_dir: Path) -> None:
     if doc_cache_path.exists():
         with doc_cache_path.open("r", encoding="utf-8") as f:
             doc_cache = json.load(f)
+    unreachable_entries: list[list[str]] = []
     header = [
         "rule_id",
         "scope_platforms",
@@ -71,6 +72,14 @@ def populate_rules_index(out_dir: Path) -> None:
             if entry:
                 reachable = entry.get("reachable", True)
                 if not reachable:
+                    unreachable_entries.append(
+                        [
+                            url,
+                            entry.get("source_url", ""),
+                            entry.get("first_seen", ""),
+                            entry.get("last_verified", ""),
+                        ]
+                    )
                     continue
                 entry["last_verified"] = now
                 doc_cache[url] = entry
@@ -120,6 +129,10 @@ def populate_rules_index(out_dir: Path) -> None:
         writer = csv.writer(f)
         writer.writerow(header)
         writer.writerows(rows)
+    with (out_dir / "unreachable_docs.csv").open("w", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f)
+        writer.writerow(["citation_url", "source_url", "first_seen", "last_verified"])
+        writer.writerows(unreachable_entries)
 
 
 def verify_doc_cache(doc_cache_path: Path | None = None) -> Dict[str, bool]:

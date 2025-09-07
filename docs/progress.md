@@ -169,3 +169,12 @@
     fp_rate_after: 0.00
     artifacts: ["out/rules_index.csv"]
   next_hint: "Flag unreachable doc cache entries for manual review; rollback: revert skipping logic"
+- ts: 2025-09-07T19:40:37Z
+  step: "Unreachable doc cache entries flagged for manual review"
+  evidence:
+    coverage_before: 1.00
+    coverage_after: 1.00
+    fp_rate_before: 0.00
+    fp_rate_after: 0.00
+    artifacts: ["out/unreachable_docs.csv"]
+  next_hint: "Notify maintainers of unreachable citations; rollback: remove unreachable docs flagging"
