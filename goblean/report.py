@@ -236,6 +236,7 @@ def summarize_escalations(out_dir: Path) -> None:
 
     escalate_path = out_dir / "unreachable_escalations.csv"
     notify_path = out_dir / "unreachable_notifications.csv"
+    unreachable_path = out_dir / "unreachable_docs.csv"
 
     escalated = 0
     if escalate_path.exists():
@@ -249,9 +250,16 @@ def summarize_escalations(out_dir: Path) -> None:
             rows = list(csv.reader(f))
         notified = len(rows) - 1 if len(rows) > 1 else 0
 
+    unreachable = 0
+    if unreachable_path.exists():
+        with unreachable_path.open("r", encoding="utf-8") as f:
+            rows = list(csv.reader(f))
+        unreachable = len(rows) - 1 if len(rows) > 1 else 0
+
     weekly_path = out_dir / "weekly_report.csv"
     prev_escalated = 0
     prev_notified = 0
+    prev_unreachable = 0
     if weekly_path.exists():
         with weekly_path.open("r", encoding="utf-8") as f:
             rows = list(csv.reader(f))
@@ -260,6 +268,8 @@ def summarize_escalations(out_dir: Path) -> None:
                 prev_escalated = int(value)
             elif metric == "notified_citations":
                 prev_notified = int(value)
+            elif metric == "unreachable_citations":
+                prev_unreachable = int(value)
     with weekly_path.open("w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
         writer.writerow(["metric", "value"])
@@ -272,6 +282,11 @@ def summarize_escalations(out_dir: Path) -> None:
         writer.writerow([
             "notified_citations_trend",
             str(notified - prev_notified),
+        ])
+        writer.writerow(["unreachable_citations", str(unreachable)])
+        writer.writerow([
+            "unreachable_citations_trend",
+            str(unreachable - prev_unreachable),
         ])
 
 

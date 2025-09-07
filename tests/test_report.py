@@ -296,6 +296,10 @@ def test_summarize_escalated_citations(tmp_path: Path) -> None:
     )
     assert rows[1] == ["escalated_citations", "1"]
     assert rows[2] == ["notified_citations", "1"]
+    assert rows[3] == ["escalated_citations_trend", "1"]
+    assert rows[4] == ["notified_citations_trend", "1"]
+    assert rows[5] == ["unreachable_citations", "1"]
+    assert rows[6] == ["unreachable_citations_trend", "1"]
     if original is None:
         doc_cache_path.unlink()
     else:
