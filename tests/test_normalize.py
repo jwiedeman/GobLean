@@ -63,3 +63,20 @@ def test_canonical_envelope_parses_form_body() -> None:
     env = canonical_envelope(raw)
     assert env["form"] == {"a": "1", "b": "2"}
 
+
+def test_canonical_envelope_parses_json_body() -> None:
+    """JSON POST bodies should be parsed into a structured mapping."""
+
+    raw = {
+        "request": {
+            "url": "https://example.com/api",
+            "postData": {
+                "mimeType": "application/json",
+                "text": '{"a": 1, "b": "two"}',
+            },
+        }
+    }
+
+    env = canonical_envelope(raw)
+    assert env["json"] == {"a": 1, "b": "two"}
+
