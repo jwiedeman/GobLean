@@ -17,6 +17,7 @@ def populate_rules_index(out_dir: Path) -> None:
     specs_dir = Path("rules/specs")
     tests_dir = Path("rules/tests")
     doc_cache_path = Path("docs/doc_cache.json")
+    doc_cache_path.parent.mkdir(parents=True, exist_ok=True)
     doc_cache: Dict[str, Dict[str, str]] = {}
     if doc_cache_path.exists():
         with doc_cache_path.open("r", encoding="utf-8") as f:
@@ -71,17 +72,26 @@ def populate_rules_index(out_dir: Path) -> None:
         citation_last_verified: list[str] = []
         for c in spec.get("citations", []):
             url = c.get("url", "")
-            if url and url in doc_cache:
+            if not url:
+                continue
+            now = datetime.now(timezone.utc).isoformat()
+            if url in doc_cache:
                 entry = doc_cache[url]
-                entry["last_verified"] = datetime.now(timezone.utc).isoformat()
+                entry["last_verified"] = now
                 doc_cache[url] = entry
                 citation_source_urls.append(entry.get("source_url", ""))
                 citation_first_seen.append(entry.get("first_seen", ""))
                 citation_last_verified.append(entry.get("last_verified", ""))
             else:
-                citation_source_urls.append(c.get("source_url", ""))
-                citation_first_seen.append(c.get("first_seen", ""))
-                citation_last_verified.append(c.get("last_verified", ""))
+                entry = {
+                    "source_url": c.get("source_url", ""),
+                    "first_seen": now,
+                    "last_verified": now,
+                }
+                doc_cache[url] = entry
+                citation_source_urls.append(entry["source_url"])
+                citation_first_seen.append(entry["first_seen"])
+                citation_last_verified.append(entry["last_verified"])
         citation_source_urls_str = "|".join([s for s in citation_source_urls if s])
         citation_first_seen_str = "|".join([s for s in citation_first_seen if s])
         citation_last_verified_str = "|".join([s for s in citation_last_verified if s])
@@ -104,9 +114,8 @@ def populate_rules_index(out_dir: Path) -> None:
                 updated_at,
             ]
         )
-    if doc_cache_path.exists():
-        with doc_cache_path.open("w", encoding="utf-8") as f:
-            json.dump(doc_cache, f, indent=2)
+    with doc_cache_path.open("w", encoding="utf-8") as f:
+        json.dump(doc_cache, f, indent=2)
     with (out_dir / "rules_index.csv").open("w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
         writer.writerow(header)

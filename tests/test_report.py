@@ -27,6 +27,7 @@ def test_write_baseline_csvs(tmp_path: Path) -> None:
         f.write(json.dumps({"params": {"ts": 0, "playhead": 0}}) + "\n")
     doc_cache_path = Path("docs/doc_cache.json")
     doc_cache_path.parent.mkdir(exist_ok=True)
+    original = doc_cache_path.read_text(encoding="utf-8") if doc_cache_path.exists() else None
     with doc_cache_path.open("w", encoding="utf-8") as f:
         json.dump(
             {
@@ -86,4 +87,30 @@ def test_write_baseline_csvs(tmp_path: Path) -> None:
     assert rules_rows[1][10] == "https://example.com/playhead-monotonicity"
     assert rules_rows[1][11] == "2024-01-01T00:00:00Z"
     assert rules_rows[1][12] == new_last_verified
-    doc_cache_path.unlink()
+    if original is None:
+        doc_cache_path.unlink()
+    else:
+        doc_cache_path.write_text(original, encoding="utf-8")
+
+
+def test_write_baseline_csvs_backfills_doc_cache(tmp_path: Path) -> None:
+    canonical = tmp_path / "canonical.jsonl"
+    with canonical.open("w", encoding="utf-8") as f:
+        f.write(json.dumps({"params": {"ts": 0, "playhead": 0}}) + "\n")
+    doc_cache_path = Path("docs/doc_cache.json")
+    doc_cache_path.parent.mkdir(exist_ok=True)
+    original = doc_cache_path.read_text(encoding="utf-8") if doc_cache_path.exists() else None
+    if doc_cache_path.exists():
+        doc_cache_path.unlink()
+    out_dir = tmp_path / "out"
+    write_baseline_csvs(canonical, out_dir)
+    assert doc_cache_path.exists()
+    with doc_cache_path.open("r", encoding="utf-8") as f:
+        cache = json.load(f)
+    entry = cache["cached://docs/playhead-monotonicity"]
+    assert entry["first_seen"]
+    assert entry["last_verified"]
+    if original is None:
+        doc_cache_path.unlink()
+    else:
+        doc_cache_path.write_text(original, encoding="utf-8")
