@@ -160,3 +160,12 @@
     fp_rate_after: 0.00
     artifacts: []
   next_hint: "Skip unreachable doc cache entries in reports; rollback: remove unreachable-source test"
+- ts: 2025-09-07T19:28:40Z
+  step: "Skip unreachable doc cache entries in reports"
+  evidence:
+    coverage_before: 1.00
+    coverage_after: 1.00
+    fp_rate_before: 0.00
+    fp_rate_after: 0.00
+    artifacts: ["out/rules_index.csv"]
+  next_hint: "Flag unreachable doc cache entries for manual review; rollback: revert skipping logic"

@@ -131,6 +131,7 @@ def test_write_baseline_csvs_backfills_doc_cache(tmp_path: Path) -> None:
     entry = cache["cached://docs/playhead-monotonicity"]
     assert entry["first_seen"]
     assert entry["last_verified"]
+    assert entry["reachable"] is True
     if original is None:
         doc_cache_path.unlink()
     else:
@@ -163,3 +164,39 @@ def test_verify_doc_cache_handles_unreachable(tmp_path: Path, monkeypatch) -> No
         updated["cached://unreachable"]["last_verified"]
         == "2024-01-01T00:00:00Z"
     )
+    assert updated["cached://unreachable"].get("reachable") is False
+
+
+def test_skip_unreachable_doc_cache_entries(tmp_path: Path) -> None:
+    canonical = tmp_path / "canonical.jsonl"
+    with canonical.open("w", encoding="utf-8") as f:
+        f.write(json.dumps({"params": {"ts": 0, "playhead": 0}}) + "\n")
+    doc_cache_path = Path("docs/doc_cache.json")
+    doc_cache_path.parent.mkdir(exist_ok=True)
+    original = doc_cache_path.read_text(encoding="utf-8") if doc_cache_path.exists() else None
+    with doc_cache_path.open("w", encoding="utf-8") as f:
+        json.dump(
+            {
+                "cached://docs/playhead-monotonicity": {
+                    "source_url": "https://example.com/playhead-monotonicity",
+                    "first_seen": "2024-01-01T00:00:00Z",
+                    "last_verified": "2024-01-01T00:00:00Z",
+                    "reachable": False,
+                }
+            },
+            f,
+        )
+    out_dir = tmp_path / "out"
+    write_baseline_csvs(canonical, out_dir)
+    rows = list(csv.reader((out_dir / "rules_index.csv").open("r", encoding="utf-8")))
+    assert rows[1][0] == "HB_PLAYHEAD_MONOTONIC_WEB"
+    # citation-related columns should be empty
+    assert rows[1][8] == ""
+    assert rows[1][9] == ""
+    assert rows[1][10] == ""
+    assert rows[1][11] == ""
+    assert rows[1][12] == ""
+    if original is None:
+        doc_cache_path.unlink()
+    else:
+        doc_cache_path.write_text(original, encoding="utf-8")

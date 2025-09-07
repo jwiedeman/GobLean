@@ -20,7 +20,7 @@ def populate_rules_index(out_dir: Path) -> None:
     tests_dir = Path("rules/tests")
     doc_cache_path = Path("docs/doc_cache.json")
     doc_cache_path.parent.mkdir(parents=True, exist_ok=True)
-    doc_cache: Dict[str, Dict[str, str]] = {}
+    doc_cache: Dict[str, Dict[str, Any]] = {}
     if doc_cache_path.exists():
         with doc_cache_path.open("r", encoding="utf-8") as f:
             doc_cache = json.load(f)
@@ -57,18 +57,8 @@ def populate_rules_index(out_dir: Path) -> None:
         version_range = scope.get("version_range", "")
         tests_pass = len(list(tests_dir.glob(f"{rule_id}__pass__*.har")))
         tests_fail = len(list(tests_dir.glob(f"{rule_id}__fail__*.har")))
-        citation_urls = [
-            c.get("url", "")
-            for c in spec.get("citations", [])
-            if c.get("url")
-        ]
-        citations = "|".join(citation_urls)
-        citation_quotes = [
-            c.get("quote", "")
-            for c in spec.get("citations", [])
-            if c.get("quote")
-        ]
-        citation_quotes_str = "|".join(citation_quotes)
+        citation_urls: list[str] = []
+        citation_quotes: list[str] = []
         citation_source_urls: list[str] = []
         citation_first_seen: list[str] = []
         citation_last_verified: list[str] = []
@@ -77,8 +67,11 @@ def populate_rules_index(out_dir: Path) -> None:
             if not url:
                 continue
             now = datetime.now(timezone.utc).isoformat()
-            if url in doc_cache:
-                entry = doc_cache[url]
+            entry = doc_cache.get(url)
+            if entry:
+                reachable = entry.get("reachable", True)
+                if not reachable:
+                    continue
                 entry["last_verified"] = now
                 doc_cache[url] = entry
                 citation_source_urls.append(entry.get("source_url", ""))
@@ -89,11 +82,16 @@ def populate_rules_index(out_dir: Path) -> None:
                     "source_url": c.get("source_url", ""),
                     "first_seen": now,
                     "last_verified": now,
+                    "reachable": True,
                 }
                 doc_cache[url] = entry
                 citation_source_urls.append(entry["source_url"])
                 citation_first_seen.append(entry["first_seen"])
                 citation_last_verified.append(entry["last_verified"])
+            citation_urls.append(url)
+            citation_quotes.append(c.get("quote", ""))
+        citations = "|".join(citation_urls)
+        citation_quotes_str = "|".join(citation_quotes)
         citation_source_urls_str = "|".join([s for s in citation_source_urls if s])
         citation_first_seen_str = "|".join([s for s in citation_first_seen if s])
         citation_last_verified_str = "|".join([s for s in citation_last_verified if s])
@@ -128,15 +126,17 @@ def verify_doc_cache(doc_cache_path: Path | None = None) -> Dict[str, bool]:
     """Verify cached documents and update ``last_verified`` timestamps.
 
     Performs a ``HEAD`` request against each ``source_url``. Entries that
-    respond with a status code < 400 have their ``last_verified`` field
-    refreshed to the current time. The function returns a mapping from
-    citation URLs to a boolean indicating verification success.
+    respond with a status code < 400 are marked ``reachable`` and have their
+    ``last_verified`` field refreshed to the current time. Unreachable entries
+    are marked ``reachable`` = ``False`` and retain their previous timestamps.
+    The function returns a mapping from citation URLs to a boolean indicating
+    verification success.
     """
 
     if doc_cache_path is None:
         doc_cache_path = Path("docs/doc_cache.json")
     doc_cache_path.parent.mkdir(parents=True, exist_ok=True)
-    cache: Dict[str, Dict[str, str]] = {}
+    cache: Dict[str, Dict[str, Any]] = {}
     if doc_cache_path.exists():
         with doc_cache_path.open("r", encoding="utf-8") as f:
             cache = json.load(f)
@@ -151,6 +151,7 @@ def verify_doc_cache(doc_cache_path: Path | None = None) -> Dict[str, bool]:
                     ok = resp.status < 400
             except Exception:
                 ok = False
+        entry["reachable"] = ok
         if ok:
             entry["last_verified"] = datetime.now(timezone.utc).isoformat()
         results[url] = ok
