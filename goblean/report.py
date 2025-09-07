@@ -26,6 +26,7 @@ def populate_rules_index(out_dir: Path) -> None:
         "tests_pass",
         "tests_fail",
         "citations",
+        "citation_quotes",
         "updated_at",
     ]
     rows = []
@@ -51,6 +52,12 @@ def populate_rules_index(out_dir: Path) -> None:
             if c.get("url")
         ]
         citations = "|".join(citation_urls)
+        citation_quotes = [
+            c.get("quote", "")
+            for c in spec.get("citations", [])
+            if c.get("quote")
+        ]
+        citation_quotes_str = "|".join(citation_quotes)
         updated_at = datetime.now(timezone.utc).isoformat()
         rows.append(
             [
@@ -63,6 +70,7 @@ def populate_rules_index(out_dir: Path) -> None:
                 str(tests_pass),
                 str(tests_fail),
                 citations,
+                citation_quotes_str,
                 updated_at,
             ]
         )
