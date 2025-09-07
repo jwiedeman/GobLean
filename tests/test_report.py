@@ -1,6 +1,7 @@
 import csv
 import json
 import time
+import urllib.error
 from pathlib import Path
 
 import goblean.report as report
@@ -134,3 +135,31 @@ def test_write_baseline_csvs_backfills_doc_cache(tmp_path: Path) -> None:
         doc_cache_path.unlink()
     else:
         doc_cache_path.write_text(original, encoding="utf-8")
+
+
+def test_verify_doc_cache_handles_unreachable(tmp_path: Path, monkeypatch) -> None:
+    cache_path = tmp_path / "cache.json"
+    cache_path.write_text(
+        json.dumps(
+            {
+                "cached://unreachable": {
+                    "source_url": "https://example.com/missing",
+                    "first_seen": "2024-01-01T00:00:00Z",
+                    "last_verified": "2024-01-01T00:00:00Z",
+                }
+            }
+        )
+    )
+
+    def raise_error(req):  # pragma: no cover - network unreachable
+        raise urllib.error.URLError("unreachable")
+
+    monkeypatch.setattr(report.urllib.request, "urlopen", raise_error)
+    results = report.verify_doc_cache(cache_path)
+    assert results["cached://unreachable"] is False
+    with cache_path.open("r", encoding="utf-8") as f:
+        updated = json.load(f)
+    assert (
+        updated["cached://unreachable"]["last_verified"]
+        == "2024-01-01T00:00:00Z"
+    )

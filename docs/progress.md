@@ -151,3 +151,12 @@
     fp_rate_after: 0.00
     artifacts: []
   next_hint: "Handle unreachable citation sources gracefully; rollback: remove doc cache scheduler"
+- ts: 2025-09-07T19:25:03Z
+  step: "Doc cache verification handles unreachable sources"
+  evidence:
+    coverage_before: 1.00
+    coverage_after: 1.00
+    fp_rate_before: 0.00
+    fp_rate_after: 0.00
+    artifacts: []
+  next_hint: "Skip unreachable doc cache entries in reports; rollback: remove unreachable-source test"
