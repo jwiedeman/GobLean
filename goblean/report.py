@@ -7,6 +7,7 @@ import json
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict
+import urllib.request
 
 from goblean.fingerprint import fingerprint
 
@@ -120,6 +121,42 @@ def populate_rules_index(out_dir: Path) -> None:
         writer = csv.writer(f)
         writer.writerow(header)
         writer.writerows(rows)
+
+
+def verify_doc_cache(doc_cache_path: Path | None = None) -> Dict[str, bool]:
+    """Verify cached documents and update ``last_verified`` timestamps.
+
+    Performs a ``HEAD`` request against each ``source_url``. Entries that
+    respond with a status code < 400 have their ``last_verified`` field
+    refreshed to the current time. The function returns a mapping from
+    citation URLs to a boolean indicating verification success.
+    """
+
+    if doc_cache_path is None:
+        doc_cache_path = Path("docs/doc_cache.json")
+    doc_cache_path.parent.mkdir(parents=True, exist_ok=True)
+    cache: Dict[str, Dict[str, str]] = {}
+    if doc_cache_path.exists():
+        with doc_cache_path.open("r", encoding="utf-8") as f:
+            cache = json.load(f)
+    results: Dict[str, bool] = {}
+    for url, entry in cache.items():
+        source = entry.get("source_url", "")
+        ok = False
+        if source:
+            try:
+                req = urllib.request.Request(source, method="HEAD")
+                with urllib.request.urlopen(req) as resp:
+                    ok = resp.status < 400
+            except Exception:
+                ok = False
+        if ok:
+            entry["last_verified"] = datetime.now(timezone.utc).isoformat()
+        results[url] = ok
+        cache[url] = entry
+    with doc_cache_path.open("w", encoding="utf-8") as f:
+        json.dump(cache, f, indent=2)
+    return results
 
 
 def metrics_from_canonical(path: Path) -> Dict[str, Any]:
