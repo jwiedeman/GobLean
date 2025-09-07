@@ -53,6 +53,9 @@ def test_write_baseline_csvs(tmp_path: Path) -> None:
         "tests_fail",
         "citations",
         "citation_quotes",
+        "citation_source_urls",
+        "citation_first_seen",
+        "citation_last_verified",
         "updated_at",
     ]
     assert rules_rows[1][0] == "HB_PLAYHEAD_MONOTONIC_WEB"
@@ -60,3 +63,6 @@ def test_write_baseline_csvs(tmp_path: Path) -> None:
     assert rules_rows[1][6] == "1"
     assert rules_rows[1][7] == "0"
     assert rules_rows[1][9] == "Playhead must not decrease."
+    assert rules_rows[1][10] == ""
+    assert rules_rows[1][11] == ""
+    assert rules_rows[1][12] == ""

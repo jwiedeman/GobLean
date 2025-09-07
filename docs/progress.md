@@ -106,3 +106,12 @@
     fp_rate_after: 0.00
     artifacts: ["out/rules_index.csv"]
   next_hint: "Track citation provenance fields in rules index; rollback: remove citation quotes column"
+- ts: 2025-09-07T18:58:10Z
+  step: "Citation provenance fields tracked in rules index"
+  evidence:
+    coverage_before: 1.00
+    coverage_after: 1.00
+    fp_rate_before: 0.00
+    fp_rate_after: 0.00
+    artifacts: ["out/rules_index.csv"]
+  next_hint: "Link provenance fields to doc cache updates; rollback: remove citation provenance columns"
