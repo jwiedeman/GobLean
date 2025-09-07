@@ -702,50 +702,6 @@ budgets:
 
 * * * * *
 
-29.4 Orchestrator Contract (Strict JSON I/O)
---------------------------------------------
-
-Each cycle, **return JSON only** (no prose). The runner will apply edits, execute commands, then run checks.
-
-`{
-  "decision": {
-    "reason": "Why this is the smallest safe, checkable step toward DoD",
-    "stuck": false,
-    "needs": null
-  },
-  "plan": {
-    "files_to_change": [{"path":"...", "intent":"..."}],
-    "edits": [
-      {
-        "path": "path/file.ext",
-        "op": "patch|create|delete",
-        "language": "python|yaml|json|md",
-        "contents": "<<<FULL NEW FILE OR UNIFIED DIFF>>>"
-      }
-    ],
-    "commands": [
-      {"label":"normalize","cmd":"python -m goblin.normalize --in har/ --out out/canonical.jsonl"},
-      {"label":"validate","cmd":"hb_re validate --in har/waga.har --out out/report.json"}
-    ],
-    "checks": [
-      {"label":"unit","cmd":"pytest -q","expect":{"exit_code":0}},
-      {"label":"schema","cmd":"python -m goblin.schema_check out/canonical.jsonl","expect":{"exit_code":0}},
-      {"label":"hb","cmd":"hb_re validate --in har/waga.har --out out/report.json",
-       "expect":{"exit_code":0,"contains":["false_positive_rate <= 0.02"]}}
-    ],
-    "success_definition": "All checks green AND DoD deltas improve (FPR↓ or ≤ target; coverage↑)."
-  },
-  "ledger_append": {
-    "summary": "One-line step summary",
-    "evidence": [
-      {"type":"metric","key":"fp_rate","before":0.051,"after":0.031},
-      {"type":"artifact","path":"out/report.html"}
-    ],
-    "next_hint": "If green → next step ... / If red → fallback ..."
-  }
-}`
-
-* * * * *
 
 29.5 Self‑Documentation: `docs/agent_notes.md` (Agent‑Managed)
 --------------------------------------------------------------
