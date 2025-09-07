@@ -43,3 +43,12 @@
     fp_rate_after: 0.00
     artifacts: ["rules/specs/HB_PLAYHEAD_MONOTONIC_WEB.yaml"]
   next_hint: "Add golden test for playhead monotonicity; rollback: remove spec file"
+- ts: 2025-09-07T12:00:28Z
+  step: "Golden test verifies playhead monotonicity"
+  evidence:
+    coverage_before: 0.00
+    coverage_after: 0.00
+    fp_rate_before: 0.00
+    fp_rate_after: 0.00
+    artifacts: ["rules/tests/HB_PLAYHEAD_MONOTONIC_WEB__pass__simple.har"]
+  next_hint: "Shadow eval the spec on baseline; rollback: remove golden test and spec"
