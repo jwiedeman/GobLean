@@ -300,6 +300,34 @@ def summarize_escalations(out_dir: Path) -> None:
             f.write(f"<div>{name}: {val:+d} {bar}</div>\n")
         f.write("</body></html>\n")
 
+    history_path = out_dir / "weekly_report_history.csv"
+    history_exists = history_path.exists()
+    with history_path.open("a", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f)
+        if not history_exists:
+            writer.writerow(
+                [
+                    "ts",
+                    "escalated_citations",
+                    "notified_citations",
+                    "escalated_citations_trend",
+                    "notified_citations_trend",
+                    "unreachable_citations",
+                    "unreachable_citations_trend",
+                ]
+            )
+        writer.writerow(
+            [
+                datetime.now(timezone.utc).isoformat(),
+                str(escalated),
+                str(notified),
+                str(trend_escalated),
+                str(trend_notified),
+                str(unreachable),
+                str(trend_unreachable),
+            ]
+        )
+
 
 def metrics_from_canonical(path: Path) -> Dict[str, Any]:
     """Compute simple metrics from a canonical JSONL file.
