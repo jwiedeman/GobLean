@@ -270,24 +270,35 @@ def summarize_escalations(out_dir: Path) -> None:
                 prev_notified = int(value)
             elif metric == "unreachable_citations":
                 prev_unreachable = int(value)
+    trend_escalated = escalated - prev_escalated
+    trend_notified = notified - prev_notified
+    trend_unreachable = unreachable - prev_unreachable
     with weekly_path.open("w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
         writer.writerow(["metric", "value"])
         writer.writerow(["escalated_citations", str(escalated)])
         writer.writerow(["notified_citations", str(notified)])
-        writer.writerow([
-            "escalated_citations_trend",
-            str(escalated - prev_escalated),
-        ])
-        writer.writerow([
-            "notified_citations_trend",
-            str(notified - prev_notified),
-        ])
+        writer.writerow(["escalated_citations_trend", str(trend_escalated)])
+        writer.writerow(["notified_citations_trend", str(trend_notified)])
         writer.writerow(["unreachable_citations", str(unreachable)])
-        writer.writerow([
-            "unreachable_citations_trend",
-            str(unreachable - prev_unreachable),
-        ])
+        writer.writerow(["unreachable_citations_trend", str(trend_unreachable)])
+    html_path = out_dir / "weekly_report.html"
+    with html_path.open("w", encoding="utf-8") as f:
+        f.write("<html><body>\n")
+        f.write("<h1>Weekly Citation Report</h1>\n")
+        f.write("<table><tr><th>metric</th><th>value</th></tr>\n")
+        f.write(f"<tr><td>escalated_citations</td><td>{escalated}</td></tr>\n")
+        f.write(f"<tr><td>notified_citations</td><td>{notified}</td></tr>\n")
+        f.write(f"<tr><td>unreachable_citations</td><td>{unreachable}</td></tr>\n")
+        f.write("</table>\n<h2>Trends</h2>\n")
+        for name, val in [
+            ("escalated_citations_trend", trend_escalated),
+            ("notified_citations_trend", trend_notified),
+            ("unreachable_citations_trend", trend_unreachable),
+        ]:
+            bar = "█" * max(val, 0)
+            f.write(f"<div>{name}: {val:+d} {bar}</div>\n")
+        f.write("</body></html>\n")
 
 
 def metrics_from_canonical(path: Path) -> Dict[str, Any]:
