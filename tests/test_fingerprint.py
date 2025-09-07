@@ -20,3 +20,15 @@ def test_fingerprint_heuristics():
 def test_fingerprint_missing_fields():
     event = {}
     assert fingerprint(event) == ("unknown", "unknown", ())
+
+
+def test_fingerprint_header_case_insensitive():
+    """Header keys should be matched regardless of case."""
+    event = {
+        "headers": {
+            "user-agent": "Android/10",
+            "x-sdk-name": "hb-api",
+            "x-sdk-version": "1.2.3",
+        }
+    }
+    assert fingerprint(event) == ("android", "hb-api", (1, 2, 3))
