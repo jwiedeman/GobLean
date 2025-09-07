@@ -295,6 +295,7 @@ def test_summarize_escalated_citations(tmp_path: Path) -> None:
         csv.reader((out_dir / "weekly_report.csv").open("r", encoding="utf-8"))
     )
     assert rows[1] == ["escalated_citations", "1"]
+    assert rows[2] == ["notified_citations", "1"]
     if original is None:
         doc_cache_path.unlink()
     else:
