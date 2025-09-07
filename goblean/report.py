@@ -45,6 +45,12 @@ def populate_rules_index(out_dir: Path) -> None:
         version_range = scope.get("version_range", "")
         tests_pass = len(list(tests_dir.glob(f"{rule_id}__pass__*.har")))
         tests_fail = len(list(tests_dir.glob(f"{rule_id}__fail__*.har")))
+        citation_urls = [
+            c.get("url", "")
+            for c in spec.get("citations", [])
+            if c.get("url")
+        ]
+        citations = "|".join(citation_urls)
         updated_at = datetime.now(timezone.utc).isoformat()
         rows.append(
             [
@@ -56,7 +62,7 @@ def populate_rules_index(out_dir: Path) -> None:
                 constitutional_touch,
                 str(tests_pass),
                 str(tests_fail),
-                "",
+                citations,
                 updated_at,
             ]
         )
