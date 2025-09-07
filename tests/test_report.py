@@ -35,10 +35,13 @@ def test_write_baseline_csvs(tmp_path: Path) -> None:
         "violations.csv": ["session_id","event_id","platform","sdk","version_guess","rule_id","fail_code","severity","ts"],
         "coverage.csv": ["session_id","platform","sdk","version_guess","label","confidence","source_lf_ids"],
         "dictionary.csv": ["param","aliases","type","unit","min","max","mean","stdev","stability","presence_map","evidence_examples"],
-        "rules_index.csv": ["rule_id","scope_platforms","scope_sdks","version_range","enabled","constitutional_touch","tests_pass","tests_fail","citations","updated_at"],
         "clusters.csv": ["cluster_id","platform_guess","sdk_guess","signature","representative_sessions","n","novelty_score"],
         "sessions_index.csv": ["session_id","platform","sdk","version_guess","first_ts","last_ts","event_count","file_source"],
     }
     for name, header in expected_headers.items():
         with (out_dir / name).open("r", encoding="utf-8") as f:
             assert next(csv.reader(f)) == header
+    rules_rows = list(csv.reader((out_dir / "rules_index.csv").open("r", encoding="utf-8")))
+    assert rules_rows[0] == ["rule_id","scope_platforms","scope_sdks","version_range","enabled","constitutional_touch","tests_pass","tests_fail","citations","updated_at"]
+    assert rules_rows[1][0] == "HB_PLAYHEAD_MONOTONIC_WEB"
+    assert rules_rows[1][3] == "0.0.0-virtual"

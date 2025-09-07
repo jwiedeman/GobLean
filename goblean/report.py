@@ -11,6 +11,61 @@ from typing import Any, Dict
 from goblean.fingerprint import fingerprint
 
 
+def populate_rules_index(out_dir: Path) -> None:
+    """Populate ``rules_index.csv`` with scope and test counts."""
+
+    specs_dir = Path("rules/specs")
+    tests_dir = Path("rules/tests")
+    header = [
+        "rule_id",
+        "scope_platforms",
+        "scope_sdks",
+        "version_range",
+        "enabled",
+        "constitutional_touch",
+        "tests_pass",
+        "tests_fail",
+        "citations",
+        "updated_at",
+    ]
+    rows = []
+    for spec_file in specs_dir.glob("*.yaml"):
+        with spec_file.open("r", encoding="utf-8") as f:
+            spec = json.load(f)
+        scope = spec.get("scope", {})
+        checks = spec.get("checks", [])
+        constitutional_touch = ""
+        for check in checks:
+            if check.get("non_decreasing_playhead"):
+                constitutional_touch = "non_decreasing_playhead"
+                break
+        rule_id = spec.get("rule_id", "")
+        platforms = "|".join(scope.get("platforms", []))
+        sdks = "|".join(scope.get("sdks", []))
+        version_range = scope.get("version_range", "")
+        tests_pass = len(list(tests_dir.glob(f"{rule_id}__pass__*.har")))
+        tests_fail = len(list(tests_dir.glob(f"{rule_id}__fail__*.har")))
+        updated_at = datetime.now(timezone.utc).isoformat()
+        rows.append(
+            [
+                rule_id,
+                platforms,
+                sdks,
+                version_range,
+                "true",
+                constitutional_touch,
+                str(tests_pass),
+                str(tests_fail),
+                "",
+                updated_at,
+            ]
+        )
+    with (out_dir / "rules_index.csv").open("w", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f)
+        writer.writerow(header)
+        writer.writerows(rows)
+
+
 def metrics_from_canonical(path: Path) -> Dict[str, Any]:
     """Compute simple metrics from a canonical JSONL file.
 
@@ -91,16 +146,64 @@ def write_baseline_csvs(canonical: Path, out_dir: Path) -> None:
         csv.writer(f).writerows([header,row])
 
     other_files: Dict[str, list[str]] = {
-        "violations.csv": ["session_id","event_id","platform","sdk","version_guess","rule_id","fail_code","severity","ts"],
-        "coverage.csv": ["session_id","platform","sdk","version_guess","label","confidence","source_lf_ids"],
-        "dictionary.csv": ["param","aliases","type","unit","min","max","mean","stdev","stability","presence_map","evidence_examples"],
-        "rules_index.csv": ["rule_id","scope_platforms","scope_sdks","version_range","enabled","constitutional_touch","tests_pass","tests_fail","citations","updated_at"],
-        "clusters.csv": ["cluster_id","platform_guess","sdk_guess","signature","representative_sessions","n","novelty_score"],
-        "sessions_index.csv": ["session_id","platform","sdk","version_guess","first_ts","last_ts","event_count","file_source"],
+        "violations.csv": [
+            "session_id",
+            "event_id",
+            "platform",
+            "sdk",
+            "version_guess",
+            "rule_id",
+            "fail_code",
+            "severity",
+            "ts",
+        ],
+        "coverage.csv": [
+            "session_id",
+            "platform",
+            "sdk",
+            "version_guess",
+            "label",
+            "confidence",
+            "source_lf_ids",
+        ],
+        "dictionary.csv": [
+            "param",
+            "aliases",
+            "type",
+            "unit",
+            "min",
+            "max",
+            "mean",
+            "stdev",
+            "stability",
+            "presence_map",
+            "evidence_examples",
+        ],
+        "clusters.csv": [
+            "cluster_id",
+            "platform_guess",
+            "sdk_guess",
+            "signature",
+            "representative_sessions",
+            "n",
+            "novelty_score",
+        ],
+        "sessions_index.csv": [
+            "session_id",
+            "platform",
+            "sdk",
+            "version_guess",
+            "first_ts",
+            "last_ts",
+            "event_count",
+            "file_source",
+        ],
     }
     for name, head in other_files.items():
         with (out_dir / name).open("w", newline="", encoding="utf-8") as f:
             csv.writer(f).writerow(head)
+
+    populate_rules_index(out_dir)
 
 
 def main() -> None:

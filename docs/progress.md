@@ -70,3 +70,12 @@
     fp_rate_after: 0.00
     artifacts: ["rules/specs/HB_PLAYHEAD_MONOTONIC_WEB.yaml","out/metrics_daily.csv"]
   next_hint: "Populate rules index with version scope; rollback: revert semver scope and baseline update"
+- ts: 2025-09-07T12:15:00Z
+  step: "Rules index populated with version scope"
+  evidence:
+    coverage_before: 1.00
+    coverage_after: 1.00
+    fp_rate_before: 0.00
+    fp_rate_after: 0.00
+    artifacts: ["out/rules_index.csv"]
+  next_hint: "Record tests_pass counts in rules index; rollback: remove rules index population"
