@@ -25,3 +25,12 @@
     fp_rate_after: 0.00
     artifacts: []
   next_hint: "Emit baseline CSVs from report; rollback: remove goblin.report and tests"
+- ts: 2025-09-07T11:40:28Z
+  step: "Baseline CSVs emitted for observability"
+  evidence:
+    coverage_before: 0.00
+    coverage_after: 0.00
+    fp_rate_before: 0.00
+    fp_rate_after: 0.00
+    artifacts: ["out/metrics_daily.csv","out/violations.csv","out/coverage.csv","out/dictionary.csv","out/rules_index.csv","out/clusters.csv","out/sessions_index.csv"]
+  next_hint: "Add first spec and golden test; rollback: remove CSV emission and related tests"
