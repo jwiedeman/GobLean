@@ -232,19 +232,29 @@ def escalate_unreachable_docs(out_dir: Path) -> None:
 
 
 def summarize_escalations(out_dir: Path) -> None:
-    """Summarize escalated citations in a weekly report."""
+    """Summarize citation status in a weekly report."""
 
     escalate_path = out_dir / "unreachable_escalations.csv"
-    if not escalate_path.exists():
-        return
-    with escalate_path.open("r", encoding="utf-8") as f:
-        rows = list(csv.reader(f))
-    count = len(rows) - 1 if len(rows) > 1 else 0
+    notify_path = out_dir / "unreachable_notifications.csv"
+
+    escalated = 0
+    if escalate_path.exists():
+        with escalate_path.open("r", encoding="utf-8") as f:
+            rows = list(csv.reader(f))
+        escalated = len(rows) - 1 if len(rows) > 1 else 0
+
+    notified = 0
+    if notify_path.exists():
+        with notify_path.open("r", encoding="utf-8") as f:
+            rows = list(csv.reader(f))
+        notified = len(rows) - 1 if len(rows) > 1 else 0
+
     weekly_path = out_dir / "weekly_report.csv"
     with weekly_path.open("w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
         writer.writerow(["metric", "value"])
-        writer.writerow(["escalated_citations", str(count)])
+        writer.writerow(["escalated_citations", str(escalated)])
+        writer.writerow(["notified_citations", str(notified)])
 
 
 def metrics_from_canonical(path: Path) -> Dict[str, Any]:
