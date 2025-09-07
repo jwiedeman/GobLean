@@ -79,3 +79,12 @@
     fp_rate_after: 0.00
     artifacts: ["out/rules_index.csv"]
   next_hint: "Record tests_pass counts in rules index; rollback: remove rules index population"
+- ts: 2025-09-07T17:45:36Z
+  step: "Tests pass counts recorded in rules index"
+  evidence:
+    coverage_before: 1.00
+    coverage_after: 1.00
+    fp_rate_before: 0.00
+    fp_rate_after: 0.00
+    artifacts: ["out/rules_index.csv"]
+  next_hint: "Populate citations field in rules index; rollback: remove tests pass count checks"
