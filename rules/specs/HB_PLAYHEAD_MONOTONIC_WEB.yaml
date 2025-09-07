@@ -8,5 +8,11 @@
   },
   "checks": [
     {"non_decreasing_playhead": true}
+  ],
+  "citations": [
+    {
+      "url": "cached://docs/playhead-monotonicity",
+      "quote": "Playhead must not decrease."
+    }
   ]
 }
