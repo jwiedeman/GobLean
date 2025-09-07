@@ -232,3 +232,12 @@
     fp_rate_after: 0.00
     artifacts: ["out/weekly_report.csv"]
   next_hint: "Visualize trend metrics in reports; rollback: remove extra weekly metrics"
+- ts: 2025-09-07T21:10:00Z
+  step: "Trend metrics visualized in weekly report"
+  evidence:
+    coverage_before: 1.00
+    coverage_after: 1.00
+    fp_rate_before: 0.00
+    fp_rate_after: 0.00
+    artifacts: ["out/weekly_report.csv","out/weekly_report.html"]
+  next_hint: "Persist trend history for weekly report; rollback: remove trend visualization"
