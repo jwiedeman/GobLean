@@ -268,3 +268,12 @@
     fp_rate_after: 0.00
     artifacts: ["out/weekly_report_analysis.html"]
   next_hint: "Integrate visualization into weekly report; rollback: remove trend pattern visualization"
+- ts: 2025-09-07T21:43:00Z
+  step: "Visualization integrated into weekly report"
+  evidence:
+    coverage_before: 1.00
+    coverage_after: 1.00
+    fp_rate_before: 0.00
+    fp_rate_after: 0.00
+    artifacts: ["out/weekly_report.html"]
+  next_hint: "Automate distribution of integrated report; rollback: remove visualization integration"
