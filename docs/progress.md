@@ -331,3 +331,12 @@
     fp_rate_after: 0.00
     artifacts: ["out/distribution_success_history.csv","out/distribution_success_summary.csv"]
   next_hint: "Visualize delivery success trends; rollback: remove success history and summary"
+- ts: 2025-09-08T17:45:00Z
+  step: "Delivery success trends visualized"
+  evidence:
+    coverage_before: 1.00
+    coverage_after: 1.00
+    fp_rate_before: 0.00
+    fp_rate_after: 0.00
+    artifacts: ["out/distribution_success_trends.html"]
+  next_hint: "Integrate success trends visualization into weekly report; rollback: remove success trends visualization"

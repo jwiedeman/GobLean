@@ -462,6 +462,26 @@ def record_delivery_receipts(out_dir: Path) -> None:
             writer.writerow([row[0], now])
 
 
+def visualize_delivery_success_trends(out_dir: Path) -> None:
+    """Render a simple HTML chart of success-rate history."""
+
+    history_path = out_dir / "distribution_success_history.csv"
+    if not history_path.exists():
+        return
+    with history_path.open("r", encoding="utf-8") as f:
+        rows = list(csv.reader(f))
+    if len(rows) <= 1:
+        return
+    rates = [float(r[3]) for r in rows[1:]]
+    html_path = out_dir / "distribution_success_trends.html"
+    with html_path.open("w", encoding="utf-8") as f:
+        f.write("<html><body>\n<h1>Delivery Success Trends</h1>\n")
+        for rate in rates:
+            bar = "█" * int(round(rate * 10))
+            f.write(f"<div>{rate:.2f} {bar}</div>\n")
+        f.write("</body></html>\n")
+
+
 def analyze_delivery_success(out_dir: Path) -> None:
     """Summarize delivery success rates."""
 
@@ -506,6 +526,8 @@ def analyze_delivery_success(out_dir: Path) -> None:
             writer = csv.writer(f)
             writer.writerow(["avg_success_rate"])
             writer.writerow([f"{avg:.2f}"])
+
+    visualize_delivery_success_trends(out_dir)
 
 
 def metrics_from_canonical(path: Path) -> Dict[str, Any]:
