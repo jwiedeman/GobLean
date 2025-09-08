@@ -277,3 +277,12 @@
     fp_rate_after: 0.00
     artifacts: ["out/weekly_report.html"]
   next_hint: "Automate distribution of integrated report; rollback: remove visualization integration"
+- ts: 2025-09-08T00:50:32Z
+  step: "Weekly report queued for distribution"
+  evidence:
+    coverage_before: 1.00
+    coverage_after: 1.00
+    fp_rate_before: 0.00
+    fp_rate_after: 0.00
+    artifacts: ["out/distribution_queue.csv"]
+  next_hint: "Schedule distribution delivery; rollback: remove distribution queue"
