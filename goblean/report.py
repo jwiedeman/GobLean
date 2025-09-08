@@ -468,6 +468,8 @@ def analyze_delivery_success(out_dir: Path) -> None:
     schedule_path = out_dir / "distribution_schedule.csv"
     receipts_path = out_dir / "distribution_receipts.csv"
     success_path = out_dir / "distribution_success.csv"
+    history_path = out_dir / "distribution_success_history.csv"
+    summary_path = out_dir / "distribution_success_summary.csv"
     scheduled = 0
     delivered = 0
     if schedule_path.exists():
@@ -481,6 +483,29 @@ def analyze_delivery_success(out_dir: Path) -> None:
         writer = csv.writer(f)
         writer.writerow(["scheduled", "delivered", "success_rate"])
         writer.writerow([str(scheduled), str(delivered), f"{rate:.2f}"])
+
+    history_exists = history_path.exists()
+    with history_path.open("a", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f)
+        if not history_exists:
+            writer.writerow(["ts", "scheduled", "delivered", "success_rate"])
+        writer.writerow(
+            [
+                datetime.now(timezone.utc).isoformat(),
+                str(scheduled),
+                str(delivered),
+                f"{rate:.2f}",
+            ]
+        )
+    with history_path.open("r", encoding="utf-8") as f:
+        rows = list(csv.reader(f))
+    if len(rows) > 1:
+        rates = [float(r[3]) for r in rows[1:]]
+        avg = sum(rates) / len(rates)
+        with summary_path.open("w", newline="", encoding="utf-8") as f:
+            writer = csv.writer(f)
+            writer.writerow(["avg_success_rate"])
+            writer.writerow([f"{avg:.2f}"])
 
 
 def metrics_from_canonical(path: Path) -> Dict[str, Any]:
