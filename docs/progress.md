@@ -340,3 +340,12 @@
     fp_rate_after: 0.00
     artifacts: ["out/distribution_success_trends.html"]
   next_hint: "Integrate success trends visualization into weekly report; rollback: remove success trends visualization"
+- ts: 2025-09-08T18:44:12Z
+  step: "Validator checks playhead monotonicity"
+  evidence:
+    coverage_before: 1.00
+    coverage_after: 1.00
+    fp_rate_before: 0.00
+    fp_rate_after: 0.00
+    artifacts: []
+  next_hint: "Handle seeks or integrate additional invariants; rollback: remove validator check and related tests"
