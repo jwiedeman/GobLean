@@ -352,6 +352,8 @@ def test_analyze_trend_history_patterns(tmp_path: Path) -> None:
     assert rows[1] == ["escalated_citations_trend_avg", "0.50"]
     assert rows[2] == ["notified_citations_trend_avg", "0.50"]
     assert rows[3] == ["unreachable_citations_trend_avg", "0.50"]
+    html = (out_dir / "weekly_report_analysis.html").read_text(encoding="utf-8")
+    assert "escalated_citations_trend_avg: 0.50" in html
     if original is None:
         doc_cache_path.unlink()
     else:
