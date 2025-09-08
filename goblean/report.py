@@ -328,6 +328,31 @@ def summarize_escalations(out_dir: Path) -> None:
             ]
         )
 
+    analyze_trend_history(out_dir)
+
+
+def analyze_trend_history(out_dir: Path) -> None:
+    """Analyze weekly report history for average trend patterns."""
+
+    history_path = out_dir / "weekly_report_history.csv"
+    if not history_path.exists():
+        return
+    with history_path.open("r", encoding="utf-8") as f:
+        rows = list(csv.reader(f))
+    if len(rows) <= 1:
+        return
+    es = [int(r[3]) for r in rows[1:]]
+    no = [int(r[4]) for r in rows[1:]]
+    un = [int(r[6]) for r in rows[1:]]
+    n = len(es)
+    analysis_path = out_dir / "weekly_report_analysis.csv"
+    with analysis_path.open("w", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f)
+        writer.writerow(["metric", "avg_trend"])
+        writer.writerow(["escalated_citations_trend_avg", f"{sum(es)/n:.2f}"])
+        writer.writerow(["notified_citations_trend_avg", f"{sum(no)/n:.2f}"])
+        writer.writerow(["unreachable_citations_trend_avg", f"{sum(un)/n:.2f}"])
+
 
 def metrics_from_canonical(path: Path) -> Dict[str, Any]:
     """Compute simple metrics from a canonical JSONL file.

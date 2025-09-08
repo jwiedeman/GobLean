@@ -321,3 +321,38 @@ def test_summarize_escalated_citations(tmp_path: Path) -> None:
         doc_cache_path.unlink()
     else:
         doc_cache_path.write_text(original, encoding="utf-8")
+
+
+def test_analyze_trend_history_patterns(tmp_path: Path) -> None:
+    canonical = tmp_path / "canonical.jsonl"
+    with canonical.open("w", encoding="utf-8") as f:
+        f.write(json.dumps({"params": {"ts": 0, "playhead": 0}}) + "\n")
+    doc_cache_path = Path("docs/doc_cache.json")
+    doc_cache_path.parent.mkdir(exist_ok=True)
+    original = doc_cache_path.read_text(encoding="utf-8") if doc_cache_path.exists() else None
+    with doc_cache_path.open("w", encoding="utf-8") as f:
+        json.dump(
+            {
+                "cached://docs/playhead-monotonicity": {
+                    "source_url": "https://example.com/playhead-monotonicity",
+                    "first_seen": "2024-01-01T00:00:00Z",
+                    "last_verified": "2024-01-01T00:00:00Z",
+                    "reachable": False,
+                }
+            },
+            f,
+        )
+    out_dir = tmp_path / "out"
+    write_baseline_csvs(canonical, out_dir)
+    write_baseline_csvs(canonical, out_dir)
+    rows = list(
+        csv.reader((out_dir / "weekly_report_analysis.csv").open("r", encoding="utf-8"))
+    )
+    assert rows[0] == ["metric", "avg_trend"]
+    assert rows[1] == ["escalated_citations_trend_avg", "0.50"]
+    assert rows[2] == ["notified_citations_trend_avg", "0.50"]
+    assert rows[3] == ["unreachable_citations_trend_avg", "0.50"]
+    if original is None:
+        doc_cache_path.unlink()
+    else:
+        doc_cache_path.write_text(original, encoding="utf-8")
