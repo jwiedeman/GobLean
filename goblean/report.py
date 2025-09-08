@@ -424,6 +424,25 @@ def schedule_distribution(out_dir: Path) -> None:
             writer.writerow([row[0], now])
 
 
+def deliver_scheduled_reports(out_dir: Path) -> None:
+    """Deliver scheduled reports and log delivery time."""
+
+    schedule_path = out_dir / "distribution_schedule.csv"
+    if not schedule_path.exists():
+        return
+    with schedule_path.open("r", encoding="utf-8") as f:
+        rows = list(csv.reader(f))
+    if len(rows) <= 1:
+        return
+    delivery_path = out_dir / "distribution_delivery.csv"
+    now = datetime.now(timezone.utc).isoformat()
+    with delivery_path.open("w", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f)
+        writer.writerow(["file_path", "delivered_at"])
+        for row in rows[1:]:
+            writer.writerow([row[0], now])
+
+
 def metrics_from_canonical(path: Path) -> Dict[str, Any]:
     """Compute simple metrics from a canonical JSONL file.
 
@@ -567,6 +586,7 @@ def write_baseline_csvs(canonical: Path, out_dir: Path) -> None:
     summarize_escalations(out_dir)
     queue_weekly_report(out_dir)
     schedule_distribution(out_dir)
+    deliver_scheduled_reports(out_dir)
 
 
 def main() -> None:
