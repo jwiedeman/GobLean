@@ -462,6 +462,27 @@ def record_delivery_receipts(out_dir: Path) -> None:
             writer.writerow([row[0], now])
 
 
+def analyze_delivery_success(out_dir: Path) -> None:
+    """Summarize delivery success rates."""
+
+    schedule_path = out_dir / "distribution_schedule.csv"
+    receipts_path = out_dir / "distribution_receipts.csv"
+    success_path = out_dir / "distribution_success.csv"
+    scheduled = 0
+    delivered = 0
+    if schedule_path.exists():
+        with schedule_path.open("r", encoding="utf-8") as f:
+            scheduled = max(len(list(csv.reader(f))) - 1, 0)
+    if receipts_path.exists():
+        with receipts_path.open("r", encoding="utf-8") as f:
+            delivered = max(len(list(csv.reader(f))) - 1, 0)
+    rate = delivered / scheduled if scheduled else 0.0
+    with success_path.open("w", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f)
+        writer.writerow(["scheduled", "delivered", "success_rate"])
+        writer.writerow([str(scheduled), str(delivered), f"{rate:.2f}"])
+
+
 def metrics_from_canonical(path: Path) -> Dict[str, Any]:
     """Compute simple metrics from a canonical JSONL file.
 
@@ -607,6 +628,7 @@ def write_baseline_csvs(canonical: Path, out_dir: Path) -> None:
     schedule_distribution(out_dir)
     deliver_scheduled_reports(out_dir)
     record_delivery_receipts(out_dir)
+    analyze_delivery_success(out_dir)
 
 
 def main() -> None:
