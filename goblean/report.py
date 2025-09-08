@@ -345,13 +345,29 @@ def analyze_trend_history(out_dir: Path) -> None:
     no = [int(r[4]) for r in rows[1:]]
     un = [int(r[6]) for r in rows[1:]]
     n = len(es)
+    avg_es = sum(es) / n
+    avg_no = sum(no) / n
+    avg_un = sum(un) / n
+
     analysis_path = out_dir / "weekly_report_analysis.csv"
     with analysis_path.open("w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
         writer.writerow(["metric", "avg_trend"])
-        writer.writerow(["escalated_citations_trend_avg", f"{sum(es)/n:.2f}"])
-        writer.writerow(["notified_citations_trend_avg", f"{sum(no)/n:.2f}"])
-        writer.writerow(["unreachable_citations_trend_avg", f"{sum(un)/n:.2f}"])
+        writer.writerow(["escalated_citations_trend_avg", f"{avg_es:.2f}"])
+        writer.writerow(["notified_citations_trend_avg", f"{avg_no:.2f}"])
+        writer.writerow(["unreachable_citations_trend_avg", f"{avg_un:.2f}"])
+
+    html_path = out_dir / "weekly_report_analysis.html"
+    with html_path.open("w", encoding="utf-8") as f:
+        f.write("<html><body>\n<h1>Weekly Trend Analysis</h1>\n")
+        for name, val in [
+            ("escalated_citations_trend_avg", avg_es),
+            ("notified_citations_trend_avg", avg_no),
+            ("unreachable_citations_trend_avg", avg_un),
+        ]:
+            bar = "█" * max(int(round(val)), 0)
+            f.write(f"<div>{name}: {val:.2f} {bar}</div>\n")
+        f.write("</body></html>\n")
 
 
 def metrics_from_canonical(path: Path) -> Dict[str, Any]:
