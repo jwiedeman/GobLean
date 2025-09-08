@@ -409,6 +409,9 @@ def test_distribute_weekly_report(tmp_path: Path) -> None:
     rows = list(csv.reader(summary_path.open("r", encoding="utf-8")))
     assert rows[0] == ["avg_success_rate"]
     assert rows[1] == ["1.00"]
+    trends_path = out_dir / "distribution_success_trends.html"
+    assert trends_path.exists()
+    assert "Delivery Success Trends" in trends_path.read_text(encoding="utf-8")
     if original is None:
         doc_cache_path.unlink()
     else:
