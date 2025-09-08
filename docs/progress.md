@@ -304,3 +304,12 @@
     fp_rate_after: 0.00
     artifacts: ["out/distribution_delivery.csv"]
   next_hint: "Record delivery receipts; rollback: remove report delivery implementation"
+- ts: 2025-09-08T16:10:37Z
+  step: "Delivery receipts recorded"
+  evidence:
+    coverage_before: 1.00
+    coverage_after: 1.00
+    fp_rate_before: 0.00
+    fp_rate_after: 0.00
+    artifacts: ["out/distribution_receipts.csv"]
+  next_hint: "Analyze delivery success rates; rollback: remove receipt recording"

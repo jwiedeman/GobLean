@@ -393,6 +393,10 @@ def test_distribute_weekly_report(tmp_path: Path) -> None:
     rows = list(csv.reader(delivery_path.open("r", encoding="utf-8")))
     assert rows[0] == ["file_path", "delivered_at"]
     assert Path(rows[1][0]).name == "weekly_report.html"
+    receipts_path = out_dir / "distribution_receipts.csv"
+    rows = list(csv.reader(receipts_path.open("r", encoding="utf-8")))
+    assert rows[0] == ["file_path", "receipt_at"]
+    assert Path(rows[1][0]).name == "weekly_report.html"
     if original is None:
         doc_cache_path.unlink()
     else:
