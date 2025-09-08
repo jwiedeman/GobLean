@@ -401,6 +401,14 @@ def test_distribute_weekly_report(tmp_path: Path) -> None:
     rows = list(csv.reader(success_path.open("r", encoding="utf-8")))
     assert rows[0] == ["scheduled", "delivered", "success_rate"]
     assert rows[1] == ["1", "1", "1.00"]
+    history_path = out_dir / "distribution_success_history.csv"
+    rows = list(csv.reader(history_path.open("r", encoding="utf-8")))
+    assert rows[0] == ["ts", "scheduled", "delivered", "success_rate"]
+    assert rows[1][1:] == ["1", "1", "1.00"]
+    summary_path = out_dir / "distribution_success_summary.csv"
+    rows = list(csv.reader(summary_path.open("r", encoding="utf-8")))
+    assert rows[0] == ["avg_success_rate"]
+    assert rows[1] == ["1.00"]
     if original is None:
         doc_cache_path.unlink()
     else:
