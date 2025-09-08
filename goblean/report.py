@@ -389,6 +389,22 @@ def analyze_trend_history(out_dir: Path) -> None:
         f.write("</body></html>\n")
 
 
+def queue_weekly_report(out_dir: Path) -> None:
+    """Queue generated weekly report for distribution."""
+
+    report_path = out_dir / "weekly_report.html"
+    if not report_path.exists():
+        return
+    queue_path = out_dir / "distribution_queue.csv"
+    now = datetime.now(timezone.utc).isoformat()
+    exists = queue_path.exists()
+    with queue_path.open("a", newline="", encoding="utf-8") as f:
+        writer = csv.writer(f)
+        if not exists:
+            writer.writerow(["file_path", "queued_at"])
+        writer.writerow([str(report_path), now])
+
+
 def metrics_from_canonical(path: Path) -> Dict[str, Any]:
     """Compute simple metrics from a canonical JSONL file.
 
@@ -530,6 +546,7 @@ def write_baseline_csvs(canonical: Path, out_dir: Path) -> None:
     notify_unreachable_docs(out_dir)
     escalate_unreachable_docs(out_dir)
     summarize_escalations(out_dir)
+    queue_weekly_report(out_dir)
 
 
 def main() -> None:
