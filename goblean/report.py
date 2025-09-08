@@ -330,6 +330,25 @@ def summarize_escalations(out_dir: Path) -> None:
 
     analyze_trend_history(out_dir)
 
+    analysis_path = out_dir / "weekly_report_analysis.html"
+    report_path = out_dir / "weekly_report.html"
+    if analysis_path.exists() and report_path.exists():
+        analysis_html = analysis_path.read_text(encoding="utf-8")
+        start = analysis_html.find("<body>")
+        end = analysis_html.rfind("</body>")
+        if start != -1 and end != -1:
+            snippet = analysis_html[start + len("<body>") : end]
+            content = report_path.read_text(encoding="utf-8")
+            insert = content.rfind("</body>")
+            if insert != -1:
+                content = (
+                    content[:insert]
+                    + "<h2>Trend Analysis</h2>\n"
+                    + snippet
+                    + content[insert:]
+                )
+                report_path.write_text(content, encoding="utf-8")
+
 
 def analyze_trend_history(out_dir: Path) -> None:
     """Analyze weekly report history for average trend patterns."""
