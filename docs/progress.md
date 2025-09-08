@@ -286,3 +286,12 @@
     fp_rate_after: 0.00
     artifacts: ["out/distribution_queue.csv"]
   next_hint: "Schedule distribution delivery; rollback: remove distribution queue"
+- ts: 2025-09-08T00:55:00Z
+  step: "Distribution delivery scheduled"
+  evidence:
+    coverage_before: 1.00
+    coverage_after: 1.00
+    fp_rate_before: 0.00
+    fp_rate_after: 0.00
+    artifacts: ["out/distribution_schedule.csv"]
+  next_hint: "Implement report delivery for scheduled items; rollback: remove distribution schedule"
