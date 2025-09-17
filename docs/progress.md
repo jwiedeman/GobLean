@@ -340,3 +340,12 @@
     fp_rate_after: 0.00
     artifacts: ["out/distribution_success_trends.html"]
   next_hint: "Integrate success trends visualization into weekly report; rollback: remove success trends visualization"
+- ts: 2025-09-08T18:10:00Z
+  step: "Delivery success trends integrated into weekly report"
+  evidence:
+    coverage_before: 1.00
+    coverage_after: 1.00
+    fp_rate_before: 0.00
+    fp_rate_after: 0.00
+    artifacts: ["out/weekly_report.html","out/distribution_success_trends.html"]
+  next_hint: "Surface success trend deltas in distribution summaries; rollback: remove success trend embedding"

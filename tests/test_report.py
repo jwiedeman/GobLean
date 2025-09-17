@@ -302,6 +302,8 @@ def test_summarize_escalated_citations(tmp_path: Path) -> None:
     assert rows[6] == ["unreachable_citations_trend", "1"]
     html = (out_dir / "weekly_report.html").read_text(encoding="utf-8")
     assert "escalated_citations_trend: +1 █" in html
+    assert "<h2>Delivery Success Trends</h2>" in html
+    assert "1.00" in html
     history_rows = list(
         csv.reader(
             (out_dir / "weekly_report_history.csv").open("r", encoding="utf-8")
@@ -411,7 +413,11 @@ def test_distribute_weekly_report(tmp_path: Path) -> None:
     assert rows[1] == ["1.00"]
     trends_path = out_dir / "distribution_success_trends.html"
     assert trends_path.exists()
-    assert "Delivery Success Trends" in trends_path.read_text(encoding="utf-8")
+    trends_html = trends_path.read_text(encoding="utf-8")
+    assert "Delivery Success Trends" in trends_html
+    report_html = (out_dir / "weekly_report.html").read_text(encoding="utf-8")
+    assert "<h2>Delivery Success Trends</h2>" in report_html
+    assert "1.00" in report_html
     if original is None:
         doc_cache_path.unlink()
     else:

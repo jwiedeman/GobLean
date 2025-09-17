@@ -350,6 +350,7 @@ def summarize_escalations(out_dir: Path) -> None:
                 report_path.write_text(content, encoding="utf-8")
 
 
+
 def analyze_trend_history(out_dir: Path) -> None:
     """Analyze weekly report history for average trend patterns."""
 
@@ -530,6 +531,33 @@ def analyze_delivery_success(out_dir: Path) -> None:
     visualize_delivery_success_trends(out_dir)
 
 
+def integrate_delivery_success_trends(out_dir: Path) -> None:
+    """Embed delivery success trend charts into the weekly report."""
+
+    report_path = out_dir / "weekly_report.html"
+    trends_path = out_dir / "distribution_success_trends.html"
+    if not (report_path.exists() and trends_path.exists()):
+        return
+    content = report_path.read_text(encoding="utf-8")
+    if "<h2>Delivery Success Trends</h2>" in content:
+        return
+    trends_html = trends_path.read_text(encoding="utf-8")
+    start = trends_html.find("<body>")
+    end = trends_html.rfind("</body>")
+    if start == -1 or end == -1:
+        return
+    snippet = trends_html[start + len("<body>") : end].strip()
+    snippet = snippet.replace("<h1>Delivery Success Trends</h1>", "").strip()
+    if not snippet:
+        return
+    insert = content.rfind("</body>")
+    if insert == -1:
+        return
+    addition = "<h2>Delivery Success Trends</h2>\n" + snippet + "\n"
+    updated = content[:insert] + addition + content[insert:]
+    report_path.write_text(updated, encoding="utf-8")
+
+
 def metrics_from_canonical(path: Path) -> Dict[str, Any]:
     """Compute simple metrics from a canonical JSONL file.
 
@@ -676,6 +704,7 @@ def write_baseline_csvs(canonical: Path, out_dir: Path) -> None:
     deliver_scheduled_reports(out_dir)
     record_delivery_receipts(out_dir)
     analyze_delivery_success(out_dir)
+    integrate_delivery_success_trends(out_dir)
 
 
 def main() -> None:
